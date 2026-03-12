@@ -20,7 +20,7 @@ ACpp_Player::ACpp_Player()
 	Comp_Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera Component"));
 	Comp_Camera->SetupAttachment(Comp_SpringArm, USpringArmComponent::SocketName);
 	Comp_Camera->bAutoCalculateOrthoPlanes = false;
-	Comp_Camera->ProjectionMode = ECameraProjectionMode::Perspective;
+	Comp_Camera->ProjectionMode = ECameraProjectionMode::Orthographic;
 }
 
 void ACpp_Player::BeginPlay()
@@ -69,7 +69,7 @@ void ACpp_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 void ACpp_Player::Move(const FInputActionValue& Value)
 {
-	AddMovementInput(GetActorRightVector(), Value.Get<float>());
+	AddMovementInput(GetActorForwardVector(), Value.Get<float>());
 }
 
 void ACpp_Player::StartJump()
