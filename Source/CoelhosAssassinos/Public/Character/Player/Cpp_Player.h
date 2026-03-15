@@ -4,6 +4,16 @@
 #include "PaperCharacter.h"
 #include "Cpp_Player.generated.h"
 
+UENUM()
+enum class EPlayerState : uint8
+{
+	Idle UMETA(DisplayName = "Idle"),
+	Walking UMETA(DisplayName = "Walking"),
+	Jumping UMETA(DisplayName = "Jmuping"),
+	Falling UMETA(DisplayName = "Falling"),
+	Death UMETA(DisplayName = "Death")
+};
+
 UCLASS()
 class COELHOSASSASSINOS_API ACpp_Player : public APaperCharacter
 {
@@ -27,6 +37,8 @@ class COELHOSASSASSINOS_API ACpp_Player : public APaperCharacter
 
 			void StopJump();
 
+			void UpdateAnimation(EPlayerState State);
+
 	#pragma endregion
 
 	#pragma region Variaveis
@@ -49,6 +61,9 @@ class COELHOSASSASSINOS_API ACpp_Player : public APaperCharacter
 			UPROPERTY(EditAnywhere, Category = "Input Action")
 			TObjectPtr<class UInputAction> JumpAction;
 
+			bool bIsWalkingRight;
+
+			float LastDirection;
 
 	#pragma endregion
 	

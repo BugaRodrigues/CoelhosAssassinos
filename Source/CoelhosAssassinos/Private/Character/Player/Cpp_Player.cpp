@@ -4,6 +4,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
 #include "Camera/CameraComponent.h"
+#include "PaperFlipbookComponent.h"
 #include "InputActionValue.h"
 
 ACpp_Player::ACpp_Player()
@@ -69,12 +70,23 @@ void ACpp_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 void ACpp_Player::Move(const FInputActionValue& Value)
 {
-	AddMovementInput(GetActorForwardVector(), Value.Get<float>());
+	AddMovementInput(FVector(0.f, 1.f, 0.f), Value.Get<float>());
+
+	bIsWalkingRight = Value.Get<float>() > 0;
+
+	if (Value.Get<float>() != LastDirection || LastDirection == 0.f)
+	{
+		UpdateAnimation(Value.Get<float>() == 0.f ? EPlayerState::Idle : EPlayerState::Walking);
+	}
+
+	LastDirection = Value.Get<float>();
 }
 
 void ACpp_Player::StartJump()
 {
 	Jump();
+
+	UpdateAnimation(EPlayerState::Jumping);
 }
 
 void ACpp_Player::StopJump()
@@ -82,3 +94,24 @@ void ACpp_Player::StopJump()
 	StopJumping();
 }
 
+void ACpp_Player::UpdateAnimation(EPlayerState State)
+{
+	switch (State)
+	{
+		case EPlayerState::Idle:
+			return;
+		case EPlayerState::Walking:
+
+			GetSprite()->SetRelativeRotation(FRotator(0., bIsWalkingRight ? 0. : 180., 0. ));
+
+			return;
+		case EPlayerState::Jumping:
+			return;
+		case EPlayerState::Falling:
+			return;
+		case EPlayerState::Death:
+			return;
+		default:
+			return;
+	}
+}
