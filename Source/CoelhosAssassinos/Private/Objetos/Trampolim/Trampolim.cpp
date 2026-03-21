@@ -1,9 +1,9 @@
-#include "Objetos/Trampolim/Cpp_Trampolim.h"
+#include "Objetos/Trampolim/Trampolim.h"
 #include "GameFramework/Character.h"
 #include "Components/BoxComponent.h" 
 #include "PaperFlipbookComponent.h"
 
-ACpp_Trampolim::ACpp_Trampolim()
+ATrampolim::ATrampolim()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
@@ -18,6 +18,9 @@ ACpp_Trampolim::ACpp_Trampolim()
 	Comp_PaperFlipbook = CreateDefaultSubobject<UPaperFlipbookComponent>(TEXT("PaperFlipbook"));
 	Comp_PaperFlipbook->SetupAttachment(RootComponent);
 	Comp_PaperFlipbook->SetRelativeLocationAndRotation(FVector(0.f, 0.f, -25.f), FRotator(0., -90., 0.));
+	Comp_PaperFlipbook->Stop();
+	Comp_PaperFlipbook->SetPlayRate(1.f);
+	Comp_PaperFlipbook->SetLooping(false);
 
 	Comp_Box_JumpArea = CreateDefaultSubobject<UBoxComponent>(TEXT("Box Collsion (Jump Area)"));
 	Comp_Box_JumpArea->SetupAttachment(RootComponent);
@@ -27,22 +30,32 @@ ACpp_Trampolim::ACpp_Trampolim()
 	Comp_Box_JumpArea->SetCollisionResponseToAllChannels(ECR_Ignore);
 	Comp_Box_JumpArea->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 	Comp_Box_JumpArea->SetGenerateOverlapEvents(true);
-	Comp_Box_JumpArea->OnComponentBeginOverlap.AddDynamic(this, &ACpp_Trampolim::OnJumpAreaOverlap);
+	Comp_Box_JumpArea->OnComponentBeginOverlap.AddDynamic(this, &ATrampolim::OnJumpAreaOverlap);
 }
 
-void ACpp_Trampolim::BeginPlay()
+void ATrampolim::BeginPlay()
 {
 	Super::BeginPlay();
 	
 }
 
-void ACpp_Trampolim::OnJumpAreaOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void ATrampolim::OnJumpAreaOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (ACharacter* Character = Cast<ACharacter>(OtherActor))
 	{
 		if (Character->GetVelocity().Z < 0.f)
 		{
 			Character->LaunchCharacter(FVector(0.f, 0.f, LaunchForce), false, true);
+
+			Comp_PaperFlipbook->PlayFromStart();
+			Comp_PaperFlipbook->OnFinishedPlaying.AddDynamic(this, &ATrampolim::OnEndAnimation);
 		}
 	}
+}
+
+void ATrampolim::OnEndAnimation()
+{
+	Comp_PaperFlipbook->Stop();
+	Comp_PaperFlipbook->SetPlaybackPosition(0.f, false);
+	Comp_PaperFlipbook->OnFinishedPlaying.RemoveDynamic(this, &ATrampolim::OnEndAnimation);
 }

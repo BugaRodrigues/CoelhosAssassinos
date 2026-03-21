@@ -2,17 +2,17 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Cpp_Trampolim.generated.h"
+#include "Trampolim.generated.h"
 
 UCLASS()
-class COELHOSASSASSINOS_API ACpp_Trampolim : public AActor
+class COELHOSASSASSINOS_API ATrampolim : public AActor
 {
 	GENERATED_BODY()
 	
 	#pragma region Functions
 
 		public:	
-			ACpp_Trampolim();
+			ATrampolim();
 
 			//virtual void Tick(float DeltaTime) override;
 
@@ -21,6 +21,9 @@ class COELHOSASSASSINOS_API ACpp_Trampolim : public AActor
 
 			UFUNCTION()
 			void OnJumpAreaOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+			UFUNCTION()
+			void OnEndAnimation();
 
 	#pragma endregion
 

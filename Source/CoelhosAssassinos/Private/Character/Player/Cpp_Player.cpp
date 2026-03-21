@@ -6,6 +6,7 @@
 #include "Camera/CameraComponent.h"
 #include "PaperFlipbookComponent.h"
 #include "InputActionValue.h"
+#include "TimerManager.h"
 
 ACpp_Player::ACpp_Player()
 {
@@ -68,6 +69,24 @@ void ACpp_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	}
 }
 
+float ACpp_Player::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	Vida -= DamageAmount;
+
+	GetSprite()->SetSpriteColor(FColor::Red);
+
+	GetWorld()->GetTimerManager().SetTimer(TH_TomouDano, this, &ACpp_Player::TomouDano, .05f);
+
+	/*
+	if (Vida <= 0)
+	{
+		UKismetSystemLibrary::QuitGame();
+	}
+	*/
+
+	return DamageAmount;
+}
+
 void ACpp_Player::Move(const FInputActionValue& Value)
 {
 	AddMovementInput(FVector(0.f, 1.f, 0.f), Value.Get<float>());
@@ -114,4 +133,9 @@ void ACpp_Player::UpdateAnimation(EPlayerState State)
 		default:
 			return;
 	}
+}
+
+void ACpp_Player::TomouDano()
+{
+	GetSprite()->SetSpriteColor(FColor::White);
 }
