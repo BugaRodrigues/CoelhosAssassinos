@@ -14,10 +14,14 @@ class COELHOSASSASSINOS_API APlataformaMovel : public AActor
 		public:	
 			APlataformaMovel();
 
-			virtual void Tick(float DeltaTime) override;
+			//virtual void Tick(float DeltaTime) override;
 
 		protected:
 			virtual void BeginPlay() override;
+
+			void UpdateMovement();
+
+			void Esperar();
 
 	#pragma endregion
 
@@ -27,7 +31,7 @@ class COELHOSASSASSINOS_API APlataformaMovel : public AActor
 
 		protected:
 			UPROPERTY(EditAnywhere)
-			class UPaperSpriteComponent* Comp_PaperSprite;
+			class UPaperFlipbookComponent* Comp_PaperFlipbook;
 
 			UPROPERTY(EditAnywhere)
 			class UBoxComponent* Comp_BoxCollision;
@@ -40,6 +44,12 @@ class COELHOSASSASSINOS_API APlataformaMovel : public AActor
 
 		private:
 			float CurrentDistance;
+
+			int32 Direction;
+
+			struct FTimerHandle TH_Movement;
+
+			struct FTimerHandle TH_Esperar;
 
 	#pragma endregion
 	

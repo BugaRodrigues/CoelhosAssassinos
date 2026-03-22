@@ -1,43 +1,69 @@
 #include "Objetos/Plataforma/PlataformaMovel.h"
 #include "Components/SplineComponent.h"
 #include "Components/BoxComponent.h" 
-#include "PaperSpriteComponent.h"
+#include "PaperFlipbookComponent.h"
+#include "TimerManager.h"
 
 APlataformaMovel::APlataformaMovel()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	MovementSpeed = 300.f;
 	CurrentDistance = 0.f;
-
-	Comp_BoxCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("Box Collision"));
-	SetRootComponent(Comp_BoxCollision);
-
-	Comp_PaperSprite = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("Paper Sprite Component"));
-	Comp_PaperSprite->SetupAttachment(RootComponent);
+	MovementSpeed = 5.f;
+	Direction = 1;
 
 	Comp_Spline = CreateDefaultSubobject<USplineComponent>(TEXT("Spline Component"));
-	Comp_Spline->SetupAttachment(RootComponent);
+	SetRootComponent(Comp_Spline);
+
+	Comp_BoxCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("Box Collision"));
+	Comp_BoxCollision->SetupAttachment(RootComponent);
+
+	Comp_PaperFlipbook = CreateDefaultSubobject<UPaperFlipbookComponent>(TEXT("Paper Sprite Component"));
+	Comp_PaperFlipbook->SetupAttachment(Comp_BoxCollision);
 }
 
 void APlataformaMovel::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	UpdateMovement();
 }
 
-void APlataformaMovel::Tick(float DeltaTime)
+void APlataformaMovel::UpdateMovement()
 {
-	Super::Tick(DeltaTime);
-
 	if (!Comp_Spline) return;
 
-	CurrentDistance += MovementSpeed * DeltaTime;
+	float SplineLenght = Comp_Spline->GetSplineLength();
 
-	if (CurrentDistance > Comp_Spline->GetSplineLength())
+	CurrentDistance += (MovementSpeed * .01f) * Direction;
+
+	if (CurrentDistance >= SplineLenght)
 	{
-		CurrentDistance = FMath::Fmod(CurrentDistance, Comp_Spline->GetSplineLength());
+		CurrentDistance = SplineLenght;
+		Direction = -1;
+
+		GetWorld()->GetTimerManager().ClearTimer(TH_Movement);
+		GetWorld()->GetTimerManager().SetTimer(TH_Esperar, this, &APlataformaMovel::Esperar, 1.f);
+	}
+	else if (CurrentDistance <= 0.f)
+	{
+		CurrentDistance = 0.f;
+		Direction = 1;
+
+		GetWorld()->GetTimerManager().ClearTimer(TH_Movement);
+		GetWorld()->GetTimerManager().SetTimer(TH_Esperar, this, &APlataformaMovel::Esperar, 1.f);
+	}
+	else
+	{
+		GetWorld()->GetTimerManager().SetTimer(TH_Movement, this, &APlataformaMovel::UpdateMovement, .01f);
 	}
 
-	SetActorLocation(Comp_Spline->GetLocationAtDistanceAlongSpline(CurrentDistance, ESplineCoordinateSpace::World));
+	Comp_BoxCollision->SetWorldLocation(Comp_Spline->GetLocationAtDistanceAlongSpline(CurrentDistance, ESplineCoordinateSpace::World));
+}
+
+void APlataformaMovel::Esperar()
+{
+	GetWorld()->GetTimerManager().ClearTimer(TH_Esperar);
+
+	UpdateMovement();
 }
