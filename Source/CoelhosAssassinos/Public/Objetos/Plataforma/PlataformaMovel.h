@@ -14,14 +14,12 @@ class COELHOSASSASSINOS_API APlataformaMovel : public AActor
 		public:	
 			APlataformaMovel();
 
-			//virtual void Tick(float DeltaTime) override;
+			virtual void Tick(float DeltaTime) override;
 
 		protected:
 			virtual void BeginPlay() override;
 
-			void UpdateMovement();
-
-			void Esperar();
+			void Esperar() { bCanMove = true; };
 
 	#pragma endregion
 
@@ -47,9 +45,13 @@ class COELHOSASSASSINOS_API APlataformaMovel : public AActor
 
 			int32 Direction;
 
+			float SplineLenght;
+
 			struct FTimerHandle TH_Movement;
 
 			struct FTimerHandle TH_Esperar;
+
+			bool bCanMove;
 
 	#pragma endregion
 	

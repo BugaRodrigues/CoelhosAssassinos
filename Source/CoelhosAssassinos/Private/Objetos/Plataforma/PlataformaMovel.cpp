@@ -6,11 +6,12 @@
 
 APlataformaMovel::APlataformaMovel()
 {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 
 	CurrentDistance = 0.f;
 	MovementSpeed = 5.f;
 	Direction = 1;
+	bCanMove = true;
 
 	Comp_Spline = CreateDefaultSubobject<USplineComponent>(TEXT("Spline Component"));
 	SetRootComponent(Comp_Spline);
@@ -25,45 +26,36 @@ APlataformaMovel::APlataformaMovel()
 void APlataformaMovel::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	UpdateMovement();
-}
 
-void APlataformaMovel::UpdateMovement()
-{
 	if (!Comp_Spline) return;
 
-	float SplineLenght = Comp_Spline->GetSplineLength();
+	SplineLenght = Comp_Spline->GetSplineLength();
+}
 
-	CurrentDistance += (MovementSpeed * .01f) * Direction;
+void APlataformaMovel::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	if (!Comp_Spline || !bCanMove) return;
+
+	CurrentDistance += (MovementSpeed * DeltaTime) * Direction;
 
 	if (CurrentDistance >= SplineLenght)
 	{
 		CurrentDistance = SplineLenght;
 		Direction = -1;
+		bCanMove = false;
 
-		GetWorld()->GetTimerManager().ClearTimer(TH_Movement);
 		GetWorld()->GetTimerManager().SetTimer(TH_Esperar, this, &APlataformaMovel::Esperar, 1.f);
 	}
 	else if (CurrentDistance <= 0.f)
 	{
 		CurrentDistance = 0.f;
 		Direction = 1;
+		bCanMove = false;
 
-		GetWorld()->GetTimerManager().ClearTimer(TH_Movement);
 		GetWorld()->GetTimerManager().SetTimer(TH_Esperar, this, &APlataformaMovel::Esperar, 1.f);
-	}
-	else
-	{
-		GetWorld()->GetTimerManager().SetTimer(TH_Movement, this, &APlataformaMovel::UpdateMovement, .01f);
 	}
 
 	Comp_BoxCollision->SetWorldLocation(Comp_Spline->GetLocationAtDistanceAlongSpline(CurrentDistance, ESplineCoordinateSpace::World));
-}
-
-void APlataformaMovel::Esperar()
-{
-	GetWorld()->GetTimerManager().ClearTimer(TH_Esperar);
-
-	UpdateMovement();
 }

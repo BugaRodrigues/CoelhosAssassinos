@@ -1,7 +1,7 @@
 #include "Objetos/Trampolim/Trampolim.h"
-#include "GameFramework/Character.h"
 #include "Components/BoxComponent.h" 
 #include "PaperFlipbookComponent.h"
+#include "PaperCharacter.h"
 
 ATrampolim::ATrampolim()
 {
@@ -41,11 +41,11 @@ void ATrampolim::BeginPlay()
 
 void ATrampolim::OnJumpAreaOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (ACharacter* Character = Cast<ACharacter>(OtherActor))
+	if (APaperCharacter* PaperCharacter = Cast<APaperCharacter>(OtherActor))
 	{
-		if (Character->GetVelocity().Z < 0.f)
+		if (PaperCharacter->GetVelocity().Z < 0.f)
 		{
-			Character->LaunchCharacter(FVector(0.f, 0.f, LaunchForce), false, true);
+			PaperCharacter->LaunchCharacter(FVector(0.f, 0.f, LaunchForce), false, true);
 
 			Comp_PaperFlipbook->PlayFromStart();
 			Comp_PaperFlipbook->OnFinishedPlaying.AddDynamic(this, &ATrampolim::OnEndAnimation);

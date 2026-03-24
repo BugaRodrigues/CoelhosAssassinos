@@ -1,7 +1,9 @@
 #include "Character/Player/Cpp_Player.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/PlayerController.h"
+#include "Components/CapsuleComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Kismet/GameplayStatics.h"
 #include "EnhancedInputComponent.h"
 #include "Camera/CameraComponent.h"
 #include "PaperFlipbookComponent.h"
@@ -11,6 +13,10 @@
 ACpp_Player::ACpp_Player()
 {
 	PrimaryActorTick.bCanEverTick = false;
+
+	Dano = 10.f;
+
+	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &ACpp_Player::OnBeginOverlap);
 
 	Comp_SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Spring Arm Component"));
 	Comp_SpringArm->SetupAttachment(RootComponent);
@@ -85,6 +91,18 @@ float ACpp_Player::TakeDamage(float DamageAmount, FDamageEvent const& DamageEven
 	*/
 
 	return DamageAmount;
+}
+
+void ACpp_Player::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor && OtherActor != this && OtherComp)
+	{
+		if (GetVelocity().Z > 0.f) return;
+
+		LaunchCharacter(FVector(0.f, 0.f, 500.f), false, true);
+
+		UGameplayStatics::ApplyDamage(this, Dano, GetController(), this, UDamageType::StaticClass());
+	}
 }
 
 void ACpp_Player::Move(const FInputActionValue& Value)
