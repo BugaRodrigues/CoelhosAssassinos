@@ -97,11 +97,13 @@ void ACpp_Player::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* Ot
 {
 	if (OtherActor && OtherActor != this && OtherComp)
 	{
-		if (GetVelocity().Z > 0.f) return;
+		if (!OtherActor->ActorHasTag("Inimigo")) return;
+
+		if (GetVelocity().Z >= 0.f) return;
 
 		LaunchCharacter(FVector(0.f, 0.f, 500.f), false, true);
 
-		UGameplayStatics::ApplyDamage(this, Dano, GetController(), this, UDamageType::StaticClass());
+		UGameplayStatics::ApplyDamage(OtherActor, Dano, GetController(), this, UDamageType::StaticClass());
 	}
 }
 

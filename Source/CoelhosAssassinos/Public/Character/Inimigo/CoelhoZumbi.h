@@ -29,6 +29,9 @@ class COELHOSASSASSINOS_API ACoelhoZumbi : public APaperCharacter
 			UFUNCTION()
 			void OnBeginCollisionParede(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
+			UFUNCTION()
+			void OnInimigoBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
 			void TomouDano();
 
 			void Morreu() { Destroy(); };
