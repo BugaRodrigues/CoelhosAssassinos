@@ -58,6 +58,9 @@ class COELHOSASSASSINOS_API ACoelhoZumbi : public APaperCharacter
 			UPROPERTY(EditAnywhere, category = "Stats")
 			float Velocidade;
 
+			UPROPERTY()
+			class UMaterialInstanceDynamic* Mat_Inst_Dynamic;
+
 			float Direction;
 
 			bool bCanMove;

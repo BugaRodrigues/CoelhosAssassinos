@@ -1,4 +1,5 @@
 #include "Character/Player/Cpp_Player.h"
+#include "Materials/MaterialInstanceDynamic.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/PlayerController.h"
 #include "Components/CapsuleComponent.h"
@@ -15,8 +16,8 @@ ACpp_Player::ACpp_Player()
 	PrimaryActorTick.bCanEverTick = false;
 
 	Dano = 10.f;
-
-	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &ACpp_Player::OnBeginOverlap);
+	
+	SetRootComponent(GetCapsuleComponent());
 
 	Comp_SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Spring Arm Component"));
 	Comp_SpringArm->SetupAttachment(RootComponent);
@@ -29,6 +30,8 @@ ACpp_Player::ACpp_Player()
 	Comp_Camera->SetupAttachment(Comp_SpringArm, USpringArmComponent::SocketName);
 	Comp_Camera->bAutoCalculateOrthoPlanes = false;
 	Comp_Camera->ProjectionMode = ECameraProjectionMode::Orthographic;
+
+	Tags.Add(FName("Player"));
 }
 
 void ACpp_Player::BeginPlay()
@@ -45,6 +48,18 @@ void ACpp_Player::BeginPlay()
 		if (MappingContext)
 		{
 			Subsystem->AddMappingContext(MappingContext, 0);
+		}
+	#pragma endregion
+
+	#pragma region Create Dynamic Material
+		if (GetSprite()->GetMaterial(0))
+		{
+			UMaterialInterface* BaseMaterial = GetSprite()->GetMaterial(0);
+
+			if (BaseMaterial)
+			{
+				Mat_Inst_Dynamic = GetSprite()->CreateDynamicMaterialInstance(0, BaseMaterial);
+			}
 		}
 	#pragma endregion
 
@@ -79,9 +94,11 @@ float ACpp_Player::TakeDamage(float DamageAmount, FDamageEvent const& DamageEven
 {
 	Vida -= DamageAmount;
 
-	GetSprite()->SetSpriteColor(FColor::Red);
+	if (!Mat_Inst_Dynamic) return DamageAmount;
 
-	GetWorld()->GetTimerManager().SetTimer(TH_TomouDano, this, &ACpp_Player::TomouDano, .05f);
+	Mat_Inst_Dynamic->SetVectorParameterValue(TEXT("Cor"), FLinearColor::Red);
+
+	GetWorld()->GetTimerManager().SetTimer(TH_TomouDano, this, &ACpp_Player::TomouDano, .1f);
 
 	/*
 	if (Vida <= 0)
@@ -93,17 +110,17 @@ float ACpp_Player::TakeDamage(float DamageAmount, FDamageEvent const& DamageEven
 	return DamageAmount;
 }
 
-void ACpp_Player::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void ACpp_Player::Landed(const FHitResult& Hit)
 {
-	if (OtherActor && OtherActor != this && OtherComp)
+	Super::Landed(Hit);
+
+	if (Hit.GetActor())
 	{
-		if (!OtherActor->ActorHasTag("Inimigo")) return;
+		if (!Hit.GetActor()->ActorHasTag("Inimigo")) return;
 
-		if (GetVelocity().Z >= 0.f) return;
+		LaunchCharacter(FVector(0.f, 0.f, 750.f), false, true);
 
-		LaunchCharacter(FVector(0.f, 0.f, 500.f), false, true);
-
-		UGameplayStatics::ApplyDamage(OtherActor, Dano, GetController(), this, UDamageType::StaticClass());
+		UGameplayStatics::ApplyDamage(Hit.GetActor(), Dano, GetController(), this, UDamageType::StaticClass());
 	}
 }
 
@@ -155,7 +172,4 @@ void ACpp_Player::UpdateAnimation(EPlayerState State)
 	}
 }
 
-void ACpp_Player::TomouDano()
-{
-	GetSprite()->SetSpriteColor(FColor::White);
-}
+void ACpp_Player::TomouDano() { Mat_Inst_Dynamic->SetVectorParameterValue(TEXT("Cor"), FLinearColor::Black); }

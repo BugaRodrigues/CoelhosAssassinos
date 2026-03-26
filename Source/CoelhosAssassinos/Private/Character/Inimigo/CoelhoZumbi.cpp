@@ -1,4 +1,6 @@
 #include "Character/Inimigo/CoelhoZumbi.h"
+#include "Materials/MaterialInstanceDynamic.h"
+#include "Components/CapsuleComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/BoxComponent.h" 
 #include "PaperFlipbookComponent.h"
@@ -12,6 +14,7 @@ ACoelhoZumbi::ACoelhoZumbi()
 	Velocidade = 300.f;
 	bCanMove = true;
 
+	SetRootComponent(GetCapsuleComponent());
 	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &ACoelhoZumbi::OnInimigoBeginOverlap);
 
 	Comp_Box_Chao = CreateDefaultSubobject<UBoxComponent>(TEXT("Box Collision Chao"));
@@ -30,6 +33,19 @@ void ACoelhoZumbi::BeginPlay()
 	Super::BeginPlay();
 
 	Direction = GetRootComponent()->GetRelativeRotation().Yaw > 0 ? 1 : -1;
+
+	#pragma region Create Dynamic Material
+		if (GetSprite()->GetMaterial(0))
+		{
+			UMaterialInterface* BaseMaterial = GetSprite()->GetMaterial(0);
+
+			if (BaseMaterial)
+			{
+				Mat_Inst_Dynamic = GetSprite()->CreateDynamicMaterialInstance(0, BaseMaterial);
+			}
+		}
+	#pragma endregion
+
 }
 
 void ACoelhoZumbi::Tick(float DeltaTime)
@@ -74,7 +90,7 @@ void ACoelhoZumbi::OnInimigoBeginOverlap(UPrimitiveComponent* OverlappedComp, AA
 
 		Direction *= -1;
 
-		GetRootComponent()->SetRelativeRotation(FRotator(0.f, Direction < 0 ? -90.f : 90.f, 0.f));
+		Cast<APaperCharacter>(OtherActor)->LaunchCharacter(FVector(0.f, -100.f * Direction, 250.f), true, true);
 	}
 }
 
@@ -84,7 +100,9 @@ float ACoelhoZumbi::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 
 	bCanMove = false;
 
-	GetSprite()->SetSpriteColor(FColor::Red);
+	if (!Mat_Inst_Dynamic) return DamageAmount;
+
+	Mat_Inst_Dynamic->SetVectorParameterValue(TEXT("Cor"), FLinearColor::Red);
 
 	if (Vida <= 0.f)
 	{
@@ -99,15 +117,17 @@ float ACoelhoZumbi::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 		GetWorld()->GetTimerManager().SetTimer(TH_Morte, this, &ACoelhoZumbi::Morreu, 1.f);
+		
+		GetWorld()->GetTimerManager().SetTimer(TH_TomouDano, this, &ACoelhoZumbi::TomouDano, .1f);
 
-		return 0.f;
+		return DamageAmount;
 	}
 
 	GetWorld()->GetTimerManager().SetTimer(TH_StopMove, this, &ACoelhoZumbi::StopMove, .5f);
 
-	GetWorld()->GetTimerManager().SetTimer(TH_TomouDano, this, &ACoelhoZumbi::TomouDano, .05f);
+	GetWorld()->GetTimerManager().SetTimer(TH_TomouDano, this, &ACoelhoZumbi::TomouDano, .1f);
 
 	return DamageAmount;
 }
 
-void ACoelhoZumbi::TomouDano() { GetSprite()->SetSpriteColor(FColor::White); }
+void ACoelhoZumbi::TomouDano() { Mat_Inst_Dynamic->SetVectorParameterValue(TEXT("Cor"), FLinearColor::Black); }

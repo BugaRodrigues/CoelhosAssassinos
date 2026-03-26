@@ -31,8 +31,7 @@ class COELHOSASSASSINOS_API ACpp_Player : public APaperCharacter
 		protected:
 			virtual void BeginPlay() override;
 
-			UFUNCTION()
-			void OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+			virtual void Landed(const FHitResult& Hit) override;
 
 			void Move(const struct FInputActionValue& Value);
 
@@ -74,6 +73,9 @@ class COELHOSASSASSINOS_API ACpp_Player : public APaperCharacter
 
 			UPROPERTY(EditAnywhere, Category = "Stats")
 			float Dano;
+
+			UPROPERTY()
+			class UMaterialInstanceDynamic* Mat_Inst_Dynamic;
 
 			bool bIsWalkingRight;
 
