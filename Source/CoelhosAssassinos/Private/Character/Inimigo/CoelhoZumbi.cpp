@@ -102,7 +102,7 @@ float ACoelhoZumbi::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 
 	if (!Mat_Inst_Dynamic) return DamageAmount;
 
-	Mat_Inst_Dynamic->SetVectorParameterValue(TEXT("Cor"), FLinearColor::Red);
+	Mat_Inst_Dynamic->SetVectorParameterValue(TEXT("Cor"), FLinearColor(.17f, .13f, 0.f));
 
 	if (Vida <= 0.f)
 	{
@@ -118,7 +118,7 @@ float ACoelhoZumbi::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 
 		GetWorld()->GetTimerManager().SetTimer(TH_Morte, this, &ACoelhoZumbi::Morreu, 1.f);
 		
-		GetWorld()->GetTimerManager().SetTimer(TH_TomouDano, this, &ACoelhoZumbi::TomouDano, .1f);
+		GetWorld()->GetTimerManager().SetTimer(TH_TomouDano, this, &ACoelhoZumbi::TomouDano, .075f);
 
 		return DamageAmount;
 	}
@@ -130,4 +130,4 @@ float ACoelhoZumbi::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 	return DamageAmount;
 }
 
-void ACoelhoZumbi::TomouDano() { Mat_Inst_Dynamic->SetVectorParameterValue(TEXT("Cor"), FLinearColor::Black); }
+void ACoelhoZumbi::TomouDano() { Mat_Inst_Dynamic->SetVectorParameterValue(TEXT("Cor"), FLinearColor::White); }

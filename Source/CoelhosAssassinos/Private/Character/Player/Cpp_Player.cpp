@@ -98,7 +98,7 @@ float ACpp_Player::TakeDamage(float DamageAmount, FDamageEvent const& DamageEven
 
 	Mat_Inst_Dynamic->SetVectorParameterValue(TEXT("Cor"), FLinearColor::Red);
 
-	GetWorld()->GetTimerManager().SetTimer(TH_TomouDano, this, &ACpp_Player::TomouDano, .1f);
+	GetWorld()->GetTimerManager().SetTimer(TH_TomouDano, this, &ACpp_Player::TomouDano, .075f);
 
 	/*
 	if (Vida <= 0)
@@ -172,4 +172,4 @@ void ACpp_Player::UpdateAnimation(EPlayerState State)
 	}
 }
 
-void ACpp_Player::TomouDano() { Mat_Inst_Dynamic->SetVectorParameterValue(TEXT("Cor"), FLinearColor::Black); }
+void ACpp_Player::TomouDano() { Mat_Inst_Dynamic->SetVectorParameterValue(TEXT("Cor"), FLinearColor::White); }
