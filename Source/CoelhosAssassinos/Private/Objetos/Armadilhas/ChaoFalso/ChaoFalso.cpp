@@ -17,7 +17,7 @@ AChaoFalso::AChaoFalso()
 
 	Comp_PaperSprite = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("Paper Sprite"));
 	Comp_PaperSprite->SetupAttachment(GetRootComponent());
-	Comp_PaperSprite->SetSprite(Sprites.IsValidIndex(1) ? Sprites[1] : nullptr);
+	Comp_PaperSprite->SetSprite(Sprite_Ativo ? Sprite_Ativo : nullptr);
 }
 
 void AChaoFalso::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -31,7 +31,7 @@ void AChaoFalso::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* Oth
 			GetWorld()->GetTimerManager().ClearTimer(TH_Destruct);
 			GetWorld()->GetTimerManager().SetTimer(TH_Destruct, this, &AChaoFalso::Destruct, 1.5f);
 
-			Comp_PaperSprite->SetSprite(Sprites.IsValidIndex(2) ? Sprites[2] : nullptr);
+			Comp_PaperSprite->SetSprite(Sprite_Completo ? Sprite_Completo : nullptr);
 
 			Comp_BoxCollision->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
 		}
@@ -46,7 +46,7 @@ void AChaoFalso::OnEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* Other
 {
 	if (OtherActor && OtherActor != this && !bIsProcessing)
 	{
-		Comp_PaperSprite->SetSprite(Sprites.IsValidIndex(2) ? Sprites[2] : nullptr);
+		Comp_PaperSprite->SetSprite(Sprite_Completo ? Sprite_Completo : nullptr);
 
 		Comp_BoxCollision->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 	}
@@ -54,7 +54,7 @@ void AChaoFalso::OnEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* Other
 
 void AChaoFalso::Destruct()
 {
-	Comp_PaperSprite->SetSprite(Sprites.IsValidIndex(0) ? Sprites[0] : nullptr);
+	Comp_PaperSprite->SetSprite(Sprite_Inativo ? Sprite_Inativo : nullptr);
 
 	GetWorld()->GetTimerManager().ClearTimer(TH_Construct);
 	GetWorld()->GetTimerManager().SetTimer(TH_Construct, this, &AChaoFalso::Construct, 3.f);
@@ -66,7 +66,7 @@ void AChaoFalso::Construct()
 {
 	bIsProcessing = false;
 
-	Comp_PaperSprite->SetSprite(Sprites.IsValidIndex(1) ? Sprites[1] : nullptr);
+	Comp_PaperSprite->SetSprite(Sprite_Ativo ? Sprite_Ativo : nullptr);
 
 	Comp_BoxCollision->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 }

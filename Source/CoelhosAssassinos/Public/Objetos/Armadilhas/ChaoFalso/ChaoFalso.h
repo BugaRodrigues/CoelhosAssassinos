@@ -43,7 +43,13 @@ class COELHOSASSASSINOS_API AChaoFalso : public AActor
 			class UPaperSpriteComponent* Comp_PaperSprite;
 
 			UPROPERTY(EditAnywhere, category = "Sprites")
-			TArray<class UPaperSprite*> Sprites;
+			class UPaperSprite* Sprite_Ativo;
+
+			UPROPERTY(EditAnywhere, category = "Sprites")
+			class UPaperSprite* Sprite_Completo;
+
+			UPROPERTY(EditAnywhere, category = "Sprites")
+			class UPaperSprite* Sprite_Inativo;
 
 			struct FTimerHandle TH_Destruct;
 
