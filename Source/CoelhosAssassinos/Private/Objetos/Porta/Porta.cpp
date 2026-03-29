@@ -1,0 +1,49 @@
+#include "Objetos/Porta/Porta.h"
+#include "Components/BoxComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "GameMode/MainGameMode.h"
+#include "PaperSpriteComponent.h"
+
+APorta::APorta()
+{
+	PrimaryActorTick.bCanEverTick = false;
+
+	bIsOpen = false;
+
+	Comp_BoxCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("Comp_BoxCollision"));
+	SetRootComponent(Comp_BoxCollision);
+	Comp_BoxCollision->OnComponentBeginOverlap.AddDynamic(this, &APorta::OnBeginOverlap);
+
+	Comp_Sprite = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("Comp_Sprite"));
+	Comp_Sprite->SetupAttachment(RootComponent);
+	Comp_Sprite->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	Comp_Sprite->SetGenerateOverlapEvents(false);
+	Comp_Sprite->SetRelativeRotation(FRotator(0.f, 90.f, 0.f));
+
+	GameMode = Cast<AMainGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+	if (GameMode)
+	{
+		GameMode->OpenGate.BindUObject(this, &APorta::OpenDoor);
+	}
+}
+
+void APorta::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (!bIsOpen) return;
+
+	if (!OtherActor && OtherActor == this) return;
+
+	if (!OtherActor->ActorHasTag(FName("Player"))) return;
+
+	UGameplayStatics::OpenLevel(this, FName(*NextLevel->GetName()));
+}
+
+void APorta::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+
+	if (GameMode)
+	{
+		GameMode->OpenGate.Unbind();
+	}
+}

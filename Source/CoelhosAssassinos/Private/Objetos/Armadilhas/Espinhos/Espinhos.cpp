@@ -1,4 +1,4 @@
-#include "Objetos/Espinhos/Espinhos.h"
+#include "Objetos/Armadilhas/Espinhos/Espinhos.h"
 #include "GameFramework/Character.h"
 #include "Components/BoxComponent.h" 
 #include "Kismet/GameplayStatics.h"
