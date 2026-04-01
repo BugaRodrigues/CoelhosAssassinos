@@ -1,4 +1,5 @@
 #include "Objetos/Porta/Porta.h"
+#include "GameFramework/GameModeBase.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameMode/MainGameMode.h"
@@ -19,8 +20,13 @@ APorta::APorta()
 	Comp_Sprite->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	Comp_Sprite->SetGenerateOverlapEvents(false);
 	Comp_Sprite->SetRelativeRotation(FRotator(0.f, 90.f, 0.f));
+}
 
-	GameMode = Cast<AMainGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+void APorta::BeginPlay()
+{
+	Super::BeginPlay();
+
+	GameMode = Cast<AMainGameMode>(GetWorld()->GetAuthGameMode());
 	if (GameMode)
 	{
 		GameMode->OpenGate.BindUObject(this, &APorta::OpenDoor);
@@ -35,8 +41,10 @@ void APorta::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherAc
 
 	if (!OtherActor->ActorHasTag(FName("Player"))) return;
 
-	UGameplayStatics::OpenLevel(this, FName(*NextLevel->GetName()));
+	UGameplayStatics::OpenLevel(this, FName(*NextLevel.GetAssetName()));
 }
+
+void APorta::OpenDoor() { bIsOpen = true; }
 
 void APorta::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {

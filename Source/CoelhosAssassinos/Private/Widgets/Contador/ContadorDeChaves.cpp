@@ -25,7 +25,6 @@ void UContadorDeChaves::UpdateContador(int32 TotalChaves, int32 ChavesColetadas)
 	}
 }
 
-
 void UContadorDeChaves::NativeDestruct()
 {
 	Super::NativeDestruct();

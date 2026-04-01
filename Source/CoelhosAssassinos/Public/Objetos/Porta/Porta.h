@@ -17,12 +17,12 @@ class COELHOSASSASSINOS_API APorta : public AActor
 			//virtual void Tick(float DeltaTime) override;
 
 		protected:
-			//virtual void BeginPlay() override;
+			virtual void BeginPlay() override;
 
 			UFUNCTION()
 			void OnBeginOverlap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
-			void OpenDoor() { bIsOpen = true; };
+			void OpenDoor();
 
 			virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
@@ -40,7 +40,7 @@ class COELHOSASSASSINOS_API APorta : public AActor
 			class UBoxComponent* Comp_BoxCollision;
 
 			UPROPERTY(EditAnywhere, Category = "Mapa")
-			class UWorld* NextLevel;
+			TSoftObjectPtr<class UWorld> NextLevel;
 
 			bool bIsOpen;
 
