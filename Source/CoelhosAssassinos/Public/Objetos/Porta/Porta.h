@@ -42,6 +42,12 @@ class COELHOSASSASSINOS_API APorta : public AActor
 			UPROPERTY(EditAnywhere, Category = "Mapa")
 			TSoftObjectPtr<class UWorld> NextLevel;
 
+			UPROPERTY(EditAnywhere, Category = "Sprites")
+			class UPaperSprite* Sprite_Open;
+
+			UPROPERTY(EditAnywhere, Category = "Sprites")
+			class UPaperSprite* Sprite_Closed;
+
 			bool bIsOpen;
 
 			class AMainGameMode* GameMode;

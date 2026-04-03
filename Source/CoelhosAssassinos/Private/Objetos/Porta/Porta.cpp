@@ -26,6 +26,8 @@ void APorta::BeginPlay()
 {
 	Super::BeginPlay();
 
+	Comp_Sprite->SetSprite(Sprite_Closed ? Sprite_Closed : nullptr);
+
 	GameMode = Cast<AMainGameMode>(GetWorld()->GetAuthGameMode());
 	if (GameMode)
 	{
@@ -44,8 +46,6 @@ void APorta::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherAc
 	UGameplayStatics::OpenLevel(this, FName(*NextLevel.GetAssetName()));
 }
 
-void APorta::OpenDoor() { bIsOpen = true; }
-
 void APorta::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
@@ -54,4 +54,11 @@ void APorta::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	{
 		GameMode->OpenGate.Unbind();
 	}
+}
+
+void APorta::OpenDoor()
+{
+	bIsOpen = true;
+
+	Comp_Sprite->SetSprite(Sprite_Open ? Sprite_Open : nullptr);
 }
