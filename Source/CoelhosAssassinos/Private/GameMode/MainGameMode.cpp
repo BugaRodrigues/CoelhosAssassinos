@@ -9,20 +9,12 @@ AMainGameMode::AMainGameMode()
 
 	ChavesTotais = 0;
 	ChavesColetadas = 0;
-
-	Chave = Cast<AChave>(UGameplayStatics::GetActorOfClass(GetWorld(), AChave::StaticClass()));
-	if (Chave)
-	{
-		Chave->OnKeyCollected.BindUObject(this, &AMainGameMode::OnKeyCollected);
-	}
 }
 
 void AMainGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	if (!Chave) return;
-
 	ChavesTotais = GetAllKeys();
 
 	if (ChavesTotais > 0)
@@ -42,6 +34,14 @@ int32 AMainGameMode::GetAllKeys()
 	TArray<AActor*> ChavesEncontradas;
 
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AChave::StaticClass(), ChavesEncontradas);
+
+	if (ChavesEncontradas.Num() > 0)
+	{
+		for (AActor* Actor : ChavesEncontradas)
+		{
+			Cast<AChave>(Actor)->OnKeyCollected.BindUObject(this, &AMainGameMode::OnKeyCollected);
+		}
+	}
 
 	return ChavesEncontradas.Num();
 }

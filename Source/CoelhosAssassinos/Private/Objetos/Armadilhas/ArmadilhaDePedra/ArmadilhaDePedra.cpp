@@ -11,9 +11,9 @@ AArmadilhaDePedra::AArmadilhaDePedra()
 	PrimaryActorTick.bCanEverTick = false;
 
 	CurrentState = EFallingState::Idle;
-	FallingSpeed = 5000.f;
+	FallingSpeed = 2500.f;
 	ReturnSpeed = 10.f;
-	MaxFallDistance = 1500.f;
+	MaxFallDistance = 5000.f;
 	Damage = 20.f;
 
 	Comp_Scene = CreateDefaultSubobject<USceneComponent>(TEXT("Scene"));
@@ -115,7 +115,7 @@ void AArmadilhaDePedra::StartReturning()
 {
 	FVector CurrentLocation = Comp_BoxCollision->GetComponentLocation();
 
-	FVector ReturnLocation = FMath::VInterpTo(CurrentLocation, StartLocation, .01f, ReturnSpeed);
+	FVector ReturnLocation = FMath::InterpEaseOut(CurrentLocation, StartLocation, .01f, ReturnSpeed);
 
 	Comp_BoxCollision->SetWorldLocation(ReturnLocation);
 

@@ -72,6 +72,7 @@ class COELHOSASSASSINOS_API AArmadilhaDePedra : public AActor
 			float Damage;
 
 			FVector StartLocation;
+			FVector Comp_StatrLocation;
 			FVector EndLocation;
 			FHitResult HitResult;
 			FCollisionQueryParams QueryParams;
