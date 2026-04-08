@@ -40,7 +40,7 @@ class COELHOSASSASSINOS_API APorta : public AActor
 			class UBoxComponent* Comp_BoxCollision;
 
 			UPROPERTY(EditAnywhere, Category = "Mapa")
-			TSoftObjectPtr<class UWorld> NextLevel;
+			TSoftObjectPtr<UWorld> NextLevel;
 
 			UPROPERTY(EditAnywhere, Category = "Sprites")
 			class UPaperSprite* Sprite_Open;
