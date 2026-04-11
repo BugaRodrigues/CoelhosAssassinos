@@ -1,7 +1,6 @@
 #include "Character/Inimigo/CoelhoZumbi.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Components/CapsuleComponent.h"
-#include "Components/CapsuleComponent.h"
 #include "Components/BoxComponent.h" 
 #include "PaperFlipbookComponent.h"
 #include "TimerManager.h"
