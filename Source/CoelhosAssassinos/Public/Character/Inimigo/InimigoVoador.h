@@ -27,12 +27,11 @@ class COELHOSASSASSINOS_API AInimigoVoador : public APaperCharacter
 			UFUNCTION()
 			void OnSeePlayer(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
-			UFUNCTION()
-			void OnEndSeePlayer(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
-
 			void SetSeeingPlayerCollision();
 
 			void DoOnce() { bDoOnce = true; };
+
+			void StopSeePlayer() { bIsSeeingPlayer = false; bIsFollowingPlayer = false; };
 
 	#pragma endregion
 
@@ -53,15 +52,19 @@ class COELHOSASSASSINOS_API AInimigoVoador : public APaperCharacter
 			int32 Direction;
 
 			bool bIsSeeingPlayer;
+			bool bIsFollowingPlayer;
 			bool bCanSeePlayer;
 			bool bDoOnce;
 
 			FVector PlayerLocation;
-
 			FVector OriginalLocation;
+			FVector EndLocation;
+			FVector StartLocation;
 
 			struct FTimerHandle TH_DoOnce;
+			struct FTimerHandle TH_StopSeePlayer;
 
+			struct FCollisionQueryParams QueryParams;
 
 	#pragma endregion
 };

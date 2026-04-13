@@ -16,7 +16,6 @@ AInimigoVoador::AInimigoVoador()
 	Direction = 1;
 
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
-	GetCharacterMovement()->GravityScale = 0.f;
 
 	SetRootComponent(GetCapsuleComponent());
 	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &AInimigoVoador::OnInimigoBeginOverlap);
@@ -24,7 +23,6 @@ AInimigoVoador::AInimigoVoador()
 	Comp_BoxCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("Box Collision"));
 	Comp_BoxCollision->SetupAttachment(GetRootComponent());
 	Comp_BoxCollision->OnComponentBeginOverlap.AddDynamic(this, &AInimigoVoador::OnSeePlayer);
-	Comp_BoxCollision->OnComponentEndOverlap.AddDynamic(this, &AInimigoVoador::OnEndSeePlayer);
 
 	Tags.Add("Inimigo");
 }
@@ -34,6 +32,10 @@ void AInimigoVoador::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	QueryParams.AddIgnoredActor(this);
+	OriginalLocation = StartLocation = GetActorLocation();
+	EndLocation = OriginalLocation + FVector(0.f, 0.f, -2000.f);
+
 	SetSeeingPlayerCollision();
 
 	GetRootComponent()->SetRelativeRotation(FRotator(0.f, Direction < 0 ? -90.f : 90.f, 0.f));
@@ -46,21 +48,29 @@ void AInimigoVoador::Tick(float DeltaTime)
 
 	if (bIsSeeingPlayer)
 	{
-		AddMovementInput(PlayerLocation, 2.f);
+		AddMovementInput(FVector(0.f, PlayerLocation.Y * DeltaTime, PlayerLocation.Z * DeltaTime), 1.f);
+
+		if (GetCharacterMovement()->MaxFlySpeed != 1200.f) GetCharacterMovement()->MaxFlySpeed = 1200.f;
 	}
 	else
 	{
-		AddMovementInput(FVector(0.f, Direction, 0.f), 1.f);
+		if (GetCharacterMovement()->MaxFlySpeed != 600.f) GetCharacterMovement()->MaxFlySpeed = 600.f;
 
-		if (FVector::Distance(OriginalLocation, GetActorLocation()) >= DistanciaDeVoo && bDoOnce)
+		AddMovementInput(FVector(0.f, Velocidade * DeltaTime, 1.f * DeltaTime), Direction);
+
+		float CurrentDistance = FVector::Distance(StartLocation, GetActorLocation());
+
+		if (CurrentDistance >= DistanciaDeVoo && bDoOnce)
 		{
+			StartLocation = GetActorLocation();
+
 			Direction *= -1;
 
 			GetRootComponent()->SetRelativeRotation(FRotator(0.f, Direction < 0 ? -90.f : 90.f, 0.f));
 
 			bDoOnce = false;
 
-			GetWorldTimerManager().SetTimer(TH_DoOnce, this, &AInimigoVoador::DoOnce, .05f, false);
+			GetWorldTimerManager().SetTimer(TH_DoOnce, this, &AInimigoVoador::DoOnce, .5f, false);
 		}
 	}
 }
@@ -81,38 +91,36 @@ void AInimigoVoador::OnInimigoBeginOverlap(UPrimitiveComponent* OverlappedCompon
 
 void AInimigoVoador::OnSeePlayer(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor && OtherActor != this)
+	if (OtherActor && OtherActor != this && !bIsFollowingPlayer)
 	{
 		if (!OtherActor->ActorHasTag("Player")) return;
 
 		bIsSeeingPlayer = true;
+		bIsFollowingPlayer = true;
 
 		PlayerLocation = OtherActor->GetActorLocation();
-	}
-}
 
-void AInimigoVoador::OnEndSeePlayer(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
-{
-	if (OtherActor && OtherActor != this)
-	{
-		if (!OtherActor->ActorHasTag("Player")) return;
-
-		bIsSeeingPlayer = false;
+		GetWorldTimerManager().SetTimer(TH_DoOnce, this, &AInimigoVoador::StopSeePlayer, 2.f, false);
 	}
 }
 
 void AInimigoVoador::SetSeeingPlayerCollision()
 {
-	OriginalLocation = GetActorLocation();
-	FVector EndLocation = OriginalLocation + FVector(0.f, 0.f, -1500.f);
 	FHitResult HitResult;
-	FCollisionQueryParams QueryParams;
-	QueryParams.AddIgnoredActor(this);
-
+	
 	bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, OriginalLocation, EndLocation, ECC_WorldStatic, QueryParams);
 
 	if (bHit)
 	{
+		if (!HitResult.GetActor()->ActorHasTag("Mapa"))
+		{
+			QueryParams.AddIgnoredActor(HitResult.GetActor());
+
+			SetSeeingPlayerCollision();
+
+			return;
+		}
+
 		FVector CurrentExtent = Comp_BoxCollision->GetUnscaledBoxExtent();
 
 		Comp_BoxCollision->SetBoxExtent(FVector(CurrentExtent.X, CurrentExtent.Y, HitResult.Distance / 2));
