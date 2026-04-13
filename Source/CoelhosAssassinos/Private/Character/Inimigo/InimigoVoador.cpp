@@ -10,10 +10,13 @@ AInimigoVoador::AInimigoVoador()
 	PrimaryActorTick.bCanEverTick = true;
 
 	bIsSeeingPlayer = false;
+	bDoOnce = true;
 	Velocidade = 300.f;
 	DistanciaDeVoo = 250.f;
+	Direction = 1;
 
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
+	GetCharacterMovement()->GravityScale = 0.f;
 
 	SetRootComponent(GetCapsuleComponent());
 	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &AInimigoVoador::OnInimigoBeginOverlap);
@@ -22,6 +25,8 @@ AInimigoVoador::AInimigoVoador()
 	Comp_BoxCollision->SetupAttachment(GetRootComponent());
 	Comp_BoxCollision->OnComponentBeginOverlap.AddDynamic(this, &AInimigoVoador::OnSeePlayer);
 	Comp_BoxCollision->OnComponentEndOverlap.AddDynamic(this, &AInimigoVoador::OnEndSeePlayer);
+
+	Tags.Add("Inimigo");
 }
 
 
@@ -29,9 +34,9 @@ void AInimigoVoador::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	GetRootComponent()->SetRelativeRotation(FRotator(0.f, Direction < 0 ? -90.f : 90.f, 0.f));
+	SetSeeingPlayerCollision();
 
-	OriginalLocation = GetActorLocation();
+	GetRootComponent()->SetRelativeRotation(FRotator(0.f, Direction < 0 ? -90.f : 90.f, 0.f));
 }
 
 
@@ -47,11 +52,15 @@ void AInimigoVoador::Tick(float DeltaTime)
 	{
 		AddMovementInput(FVector(0.f, Direction, 0.f), 1.f);
 
-		if (FVector::Distance(GetActorLocation(), OriginalLocation) >= DistanciaDeVoo || FVector::Distance(GetActorLocation(), OriginalLocation) <= -DistanciaDeVoo)
+		if (FVector::Distance(OriginalLocation, GetActorLocation()) >= DistanciaDeVoo && bDoOnce)
 		{
 			Direction *= -1;
 
 			GetRootComponent()->SetRelativeRotation(FRotator(0.f, Direction < 0 ? -90.f : 90.f, 0.f));
+
+			bDoOnce = false;
+
+			GetWorldTimerManager().SetTimer(TH_DoOnce, this, &AInimigoVoador::DoOnce, .05f, false);
 		}
 	}
 }
@@ -65,6 +74,8 @@ void AInimigoVoador::OnInimigoBeginOverlap(UPrimitiveComponent* OverlappedCompon
 		Direction *= -1;
 
 		GetRootComponent()->SetRelativeRotation(FRotator(0.f, Direction < 0 ? -90.f : 90.f, 0.f));
+
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Player Colidiu com o Inimigo Voador");
 	}
 }
 
@@ -87,5 +98,24 @@ void AInimigoVoador::OnEndSeePlayer(UPrimitiveComponent* OverlappedComponent, AA
 		if (!OtherActor->ActorHasTag("Player")) return;
 
 		bIsSeeingPlayer = false;
+	}
+}
+
+void AInimigoVoador::SetSeeingPlayerCollision()
+{
+	OriginalLocation = GetActorLocation();
+	FVector EndLocation = OriginalLocation + FVector(0.f, 0.f, -1500.f);
+	FHitResult HitResult;
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this);
+
+	bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, OriginalLocation, EndLocation, ECC_WorldStatic, QueryParams);
+
+	if (bHit)
+	{
+		FVector CurrentExtent = Comp_BoxCollision->GetUnscaledBoxExtent();
+
+		Comp_BoxCollision->SetBoxExtent(FVector(CurrentExtent.X, CurrentExtent.Y, HitResult.Distance / 2));
+		Comp_BoxCollision->SetRelativeLocation(FVector(0.f, 0.f, -HitResult.Distance / 2));
 	}
 }

@@ -30,6 +30,10 @@ class COELHOSASSASSINOS_API AInimigoVoador : public APaperCharacter
 			UFUNCTION()
 			void OnEndSeePlayer(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
+			void SetSeeingPlayerCollision();
+
+			void DoOnce() { bDoOnce = true; };
+
 	#pragma endregion
 
 	#pragma region Variaveis
@@ -46,14 +50,17 @@ class COELHOSASSASSINOS_API AInimigoVoador : public APaperCharacter
 			UPROPERTY(EditAnywhere, Category = "Stats")
 			float DistanciaDeVoo;
 
-			float Direction;
+			int32 Direction;
 
 			bool bIsSeeingPlayer;
 			bool bCanSeePlayer;
+			bool bDoOnce;
 
 			FVector PlayerLocation;
 
 			FVector OriginalLocation;
+
+			struct FTimerHandle TH_DoOnce;
 
 
 	#pragma endregion
