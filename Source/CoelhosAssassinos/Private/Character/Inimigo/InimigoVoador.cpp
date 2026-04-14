@@ -15,8 +15,6 @@ AInimigoVoador::AInimigoVoador()
 	DistanciaDeVoo = 250.f;
 	Direction = 1;
 
-	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
-
 	SetRootComponent(GetCapsuleComponent());
 	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &AInimigoVoador::OnInimigoBeginOverlap);
 	
@@ -27,10 +25,11 @@ AInimigoVoador::AInimigoVoador()
 	Tags.Add("Inimigo");
 }
 
-
 void AInimigoVoador::BeginPlay()
 {
 	Super::BeginPlay();
+
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
 	
 	QueryParams.AddIgnoredActor(this);
 	OriginalLocation = StartLocation = GetActorLocation();
@@ -41,14 +40,15 @@ void AInimigoVoador::BeginPlay()
 	GetRootComponent()->SetRelativeRotation(FRotator(0.f, Direction < 0 ? -90.f : 90.f, 0.f));
 }
 
-
 void AInimigoVoador::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (bIsSeeingPlayer)
+	if (bIsSeeingPlayer && Player)
 	{
-		AddMovementInput(FVector(0.f, PlayerLocation.Y * DeltaTime, PlayerLocation.Z * DeltaTime), 1.f);
+		FVector PlayerLocation = (Player->GetActorLocation() - GetActorLocation()).GetSafeNormal();
+
+		AddMovementInput(PlayerLocation, 1.f);
 
 		if (GetCharacterMovement()->MaxFlySpeed != 1200.f) GetCharacterMovement()->MaxFlySpeed = 1200.f;
 	}
@@ -56,7 +56,7 @@ void AInimigoVoador::Tick(float DeltaTime)
 	{
 		if (GetCharacterMovement()->MaxFlySpeed != 600.f) GetCharacterMovement()->MaxFlySpeed = 600.f;
 
-		AddMovementInput(FVector(0.f, Velocidade * DeltaTime, 1.f * DeltaTime), Direction);
+		AddMovementInput(FVector(0.f, Direction, OriginalLocation.Z), 1.f);
 
 		float CurrentDistance = FVector::Distance(StartLocation, GetActorLocation());
 
@@ -98,7 +98,7 @@ void AInimigoVoador::OnSeePlayer(UPrimitiveComponent* OverlappedComponent, AActo
 		bIsSeeingPlayer = true;
 		bIsFollowingPlayer = true;
 
-		PlayerLocation = OtherActor->GetActorLocation();
+		Player = OtherActor;
 
 		GetWorldTimerManager().SetTimer(TH_DoOnce, this, &AInimigoVoador::StopSeePlayer, 2.f, false);
 	}

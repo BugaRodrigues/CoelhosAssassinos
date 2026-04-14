@@ -31,7 +31,7 @@ class COELHOSASSASSINOS_API AInimigoVoador : public APaperCharacter
 
 			void DoOnce() { bDoOnce = true; };
 
-			void StopSeePlayer() { bIsSeeingPlayer = false; bIsFollowingPlayer = false; };
+			void StopSeePlayer() { bIsSeeingPlayer = false; bIsFollowingPlayer = false; Player = nullptr; };
 
 	#pragma endregion
 
@@ -51,12 +51,13 @@ class COELHOSASSASSINOS_API AInimigoVoador : public APaperCharacter
 
 			int32 Direction;
 
+			AActor* Player;
+
 			bool bIsSeeingPlayer;
 			bool bIsFollowingPlayer;
 			bool bCanSeePlayer;
 			bool bDoOnce;
 
-			FVector PlayerLocation;
 			FVector OriginalLocation;
 			FVector EndLocation;
 			FVector StartLocation;
