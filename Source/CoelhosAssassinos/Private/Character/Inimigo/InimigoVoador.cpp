@@ -14,6 +14,7 @@ AInimigoVoador::AInimigoVoador()
 	Velocidade = 300.f;
 	DistanciaDeVoo = 250.f;
 	Direction = 1;
+	bIsReturnig = false;
 
 	SetRootComponent(GetCapsuleComponent());
 	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &AInimigoVoador::OnInimigoBeginOverlap);
@@ -52,11 +53,22 @@ void AInimigoVoador::Tick(float DeltaTime)
 
 		if (GetCharacterMovement()->MaxFlySpeed != 1200.f) GetCharacterMovement()->MaxFlySpeed = 1200.f;
 	}
+	else if (bIsReturnig) 
+	{
+		AddMovementInput((OriginalLocation - GetActorLocation()).GetSafeNormal(), 1.f);
+
+		float CurrentLocation = FVector::Dist(GetActorLocation(), OriginalLocation);
+
+		if (CurrentLocation >= OriginalLocation.Z)
+		{
+			bIsReturnig = false;
+		}
+	}
 	else
 	{
 		if (GetCharacterMovement()->MaxFlySpeed != 600.f) GetCharacterMovement()->MaxFlySpeed = 600.f;
 
-		AddMovementInput(FVector(0.f, Direction, OriginalLocation.Z), 1.f);
+		AddMovementInput(FVector(0.f, Direction, 0.f), 1.f);
 
 		float CurrentDistance = FVector::Distance(StartLocation, GetActorLocation());
 
