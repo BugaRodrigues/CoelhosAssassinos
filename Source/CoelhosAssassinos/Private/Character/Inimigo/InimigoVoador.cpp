@@ -55,11 +55,11 @@ void AInimigoVoador::Tick(float DeltaTime)
 	}
 	else if (bIsReturnig) 
 	{
-		AddMovementInput((OriginalLocation - GetActorLocation()).GetSafeNormal(), 1.f);
-
-		float CurrentLocation = FVector::Dist(GetActorLocation(), OriginalLocation);
-
-		if (CurrentLocation >= OriginalLocation.Z)
+		if (FMath::Abs(GetActorLocation().Z - OriginalLocation.Z) > 5.f)
+		{
+			AddMovementInput(FVector(0.f, 0.f, (OriginalLocation.Z > GetActorLocation().Z) ? 1.f : -1.f), 1.f);
+		}
+		else
 		{
 			bIsReturnig = false;
 		}
