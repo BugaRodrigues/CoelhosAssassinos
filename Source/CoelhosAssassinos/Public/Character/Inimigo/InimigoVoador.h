@@ -4,6 +4,14 @@
 #include "PaperCharacter.h"
 #include "InimigoVoador.generated.h"
 
+UENUM()
+enum class EEnemyState : uint8
+{
+	Patrol,
+	Returning,
+	Chase
+};
+
 UCLASS()
 class COELHOSASSASSINOS_API AInimigoVoador : public APaperCharacter
 {
@@ -29,9 +37,11 @@ class COELHOSASSASSINOS_API AInimigoVoador : public APaperCharacter
 
 			void SetSeeingPlayerCollision();
 
-			void DoOnce() { bDoOnce = true; };
+			void HandlePatrol(float DeltaTime);
 
-			void StopSeePlayer() { bIsSeeingPlayer = false; bIsFollowingPlayer = false; Player = nullptr; bIsReturnig = true; };
+			void HandleReturning(float DeltaTime);
+
+			void HandleChase(float DeltaTime);
 
 	#pragma endregion
 
@@ -43,27 +53,26 @@ class COELHOSASSASSINOS_API AInimigoVoador : public APaperCharacter
 			UPROPERTY(EditAnywhere)
 			class UBoxComponent* Comp_BoxCollision;
 
-			UPROPERTY(EditAnywhere, Category = "Stats")
-			float Velocidade;
+			UPROPERTY(EditAnywhere, Category = "State")
+			FVector OriginalLocation;
 
 			UPROPERTY(EditAnywhere, Category = "Stats")
-			float DistanciaDeVoo;
+			float PatrolDistance;
+
+			UPROPERTY(EditAnywhere, Category = "Stats")
+			float PatrolSpeed;
+
+			UPROPERTY(EditAnywhere, Category = "Stats")
+			float ChaseSpeed;
+
+			EEnemyState EnemyState;
 
 			int32 Direction;
 
 			AActor* Player;
 
-			bool bIsSeeingPlayer;
 			bool bIsFollowingPlayer;
-			bool bCanSeePlayer;
-			bool bDoOnce;
-			bool bIsReturnig;
 
-			FVector OriginalLocation;
-			FVector EndLocation;
-			FVector StartLocation;
-
-			struct FTimerHandle TH_DoOnce;
 			struct FTimerHandle TH_StopSeePlayer;
 
 			struct FCollisionQueryParams QueryParams;

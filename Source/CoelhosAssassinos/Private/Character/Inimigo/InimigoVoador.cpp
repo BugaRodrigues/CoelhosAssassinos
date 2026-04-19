@@ -9,12 +9,11 @@ AInimigoVoador::AInimigoVoador()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	bIsSeeingPlayer = false;
-	bDoOnce = true;
-	Velocidade = 300.f;
-	DistanciaDeVoo = 250.f;
+	PatrolDistance = 500.f;
+	PatrolSpeed = 600.f;
+	ChaseSpeed = 1200.f;
+	bIsFollowingPlayer = false;
 	Direction = 1;
-	bIsReturnig = false;
 
 	SetRootComponent(GetCapsuleComponent());
 	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &AInimigoVoador::OnInimigoBeginOverlap);
@@ -33,8 +32,7 @@ void AInimigoVoador::BeginPlay()
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
 	
 	QueryParams.AddIgnoredActor(this);
-	OriginalLocation = StartLocation = GetActorLocation();
-	EndLocation = OriginalLocation + FVector(0.f, 0.f, -2000.f);
+	OriginalLocation = GetActorLocation();
 
 	SetSeeingPlayerCollision();
 
@@ -45,45 +43,82 @@ void AInimigoVoador::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (bIsSeeingPlayer && Player)
+	switch (EnemyState)
 	{
-		FVector PlayerLocation = (Player->GetActorLocation() - GetActorLocation()).GetSafeNormal();
+		case EEnemyState::Patrol:
+			
+			HandlePatrol(DeltaTime);
 
-		AddMovementInput(PlayerLocation, 1.f);
+			break;
+		case EEnemyState::Returning:
+			
+			HandleReturning(DeltaTime);
 
-		if (GetCharacterMovement()->MaxFlySpeed != 1200.f) GetCharacterMovement()->MaxFlySpeed = 1200.f;
+			break;
+		case EEnemyState::Chase:
+
+			HandleChase(DeltaTime);
+
+			break;
+		default:
+			break;
 	}
-	else if (bIsReturnig) 
+}
+
+void AInimigoVoador::HandlePatrol(float DeltaTime)
+{
+	AddMovementInput(GetActorForwardVector(), PatrolSpeed * DeltaTime);
+
+	if ((GetActorLocation() - OriginalLocation).SizeSquared() >= FMath::Square(PatrolDistance))
 	{
-		if (FMath::Abs(GetActorLocation().Z - OriginalLocation.Z) > 5.f)
-		{
-			AddMovementInput(FVector(0.f, 0.f, (OriginalLocation.Z > GetActorLocation().Z) ? 1.f : -1.f), 1.f);
-		}
-		else
-		{
-			bIsReturnig = false;
-		}
+		Direction *= -1;
+
+		GetRootComponent()->SetRelativeRotation(FRotator(0.f, Direction < 0 ? -90.f : 90.f, 0.f));
+
+		EnemyState = EEnemyState::Returning;
 	}
-	else
+}
+
+void AInimigoVoador::HandleChase(float DeltaTime)
+{
+	if (!Player || !bIsFollowingPlayer) 
 	{
-		if (GetCharacterMovement()->MaxFlySpeed != 600.f) GetCharacterMovement()->MaxFlySpeed = 600.f;
+		Player = nullptr;
+		bIsFollowingPlayer = false;
+		EnemyState = EEnemyState::Returning;
 
-		AddMovementInput(FVector(0.f, Direction, 0.f), 1.f);
+		return;
+	}
 
-		float CurrentDistance = FVector::Distance(StartLocation, GetActorLocation());
+	FVector DirectionToPlayer = (Player->GetActorLocation() - GetActorLocation()).GetSafeNormal();
 
-		if (CurrentDistance >= DistanciaDeVoo && bDoOnce)
-		{
-			StartLocation = GetActorLocation();
+	AddMovementInput(DirectionToPlayer, ChaseSpeed * DeltaTime);
 
-			Direction *= -1;
+	SetActorRotation(FRotator(0.f, DirectionToPlayer.Rotation().Yaw, 0.f));
 
-			GetRootComponent()->SetRelativeRotation(FRotator(0.f, Direction < 0 ? -90.f : 90.f, 0.f));
+	if ((Player->GetActorLocation() - GetActorLocation()).SizeSquared() <= FMath::Square(50.f))
+	{
+		Player = nullptr;
+		bIsFollowingPlayer = false;
+		EnemyState = EEnemyState::Returning;
+	}
+}
 
-			bDoOnce = false;
+void AInimigoVoador::HandleReturning(float DeltaTime)
+{
+	FVector DirectionToOriginal = (OriginalLocation - GetActorLocation()).GetSafeNormal();
 
-			GetWorldTimerManager().SetTimer(TH_DoOnce, this, &AInimigoVoador::DoOnce, .5f, false);
-		}
+	AddMovementInput(DirectionToOriginal, ChaseSpeed * DeltaTime);
+
+	SetActorRotation(DirectionToOriginal.Rotation());
+
+	if ((GetActorLocation() - OriginalLocation).SizeSquared() <= FMath::Square(5.f))
+	{
+		SetActorLocation(OriginalLocation);
+
+		GetRootComponent()->SetRelativeRotation(FRotator(0.f, Direction < 0 ? -90.f : 90.f, 0.f));
+
+		EnemyState = EEnemyState::Patrol;
 	}
 }
 
@@ -107,12 +142,13 @@ void AInimigoVoador::OnSeePlayer(UPrimitiveComponent* OverlappedComponent, AActo
 	{
 		if (!OtherActor->ActorHasTag("Player")) return;
 
-		bIsSeeingPlayer = true;
 		bIsFollowingPlayer = true;
 
 		Player = OtherActor;
 
-		GetWorldTimerManager().SetTimer(TH_DoOnce, this, &AInimigoVoador::StopSeePlayer, 2.f, false);
+		EnemyState = EEnemyState::Chase;
+
+		GetWorldTimerManager().SetTimer(TH_StopSeePlayer, [this]() { EnemyState = EEnemyState::Returning; }, 2.f, false);
 	}
 }
 
@@ -120,7 +156,7 @@ void AInimigoVoador::SetSeeingPlayerCollision()
 {
 	FHitResult HitResult;
 	
-	bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, OriginalLocation, EndLocation, ECC_WorldStatic, QueryParams);
+	bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, OriginalLocation, OriginalLocation + FVector(0.f, 0.f, -2500.f), ECC_WorldStatic, QueryParams);
 
 	if (bHit)
 	{
