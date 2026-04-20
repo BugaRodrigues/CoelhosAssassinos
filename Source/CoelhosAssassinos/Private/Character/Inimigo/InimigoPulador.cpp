@@ -18,10 +18,6 @@ AInimigoPulador::AInimigoPulador()
 	Comp_ParedeCollision->SetupAttachment(GetRootComponent());
 	Comp_ParedeCollision->OnComponentBeginOverlap.AddDynamic(this, &AInimigoPulador::OnParedeBeginOverlap);
 
-	Comp_ChaoCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("Box Collision Chao"));
-	Comp_ChaoCollision->SetupAttachment(GetRootComponent());
-	Comp_ChaoCollision->OnComponentEndOverlap.AddDynamic(this, &AInimigoPulador::OnChaoEndOverlap);
-
 	Tags.Add("Inimigo");
 }
 
@@ -29,9 +25,17 @@ void AInimigoPulador::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	
+	BoxExtent = FVector(10.f, 10.f, 10.f);
+	BoxRotation = GetActorQuat();
+	CollisionParams.AddIgnoredActor(this);
+	CollisionShape = FCollisionShape::MakeBox(BoxExtent);
+
 	GetRootComponent()->SetRelativeRotation(FRotator(0.f, Direction < 0 ? -90.f : 90.f, 0.f));
 
 	Comp_ChaoCollision->SetRelativeLocation(FVector(ForcaDoPulo, 0.f + 10.f, -GetCapsuleComponent()->GetScaledCapsuleHalfHeight() - 10.f));
+
+	GetWorldTimerManager().SetTimer(TH_Jump, this, &AInimigoPulador::Jump, FMath::RandRange(.5f, 1.5f), true, 1.f);
 }
 
 void AInimigoPulador::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -40,13 +44,11 @@ void AInimigoPulador::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, A
 	{
 		if (OtherActor->ActorHasTag("Player"))
 		{
-			AInimigoPulador::LaunchCharacter(FVector(0.f, 0.f, ForcaDoPulo), false, true);
+			Target = ETargetJump::Player;
 		}
-		else if (OtherActor->ActorHasTag("Mapa"))
+		else
 		{
-			if (GetWorldTimerManager().IsTimerActive(TH_Jump)) return;
-
-			GetWorldTimerManager().SetTimer(TH_Jump, this, &AInimigoPulador::Jump, 0.5f, false);
+			Target = ETargetJump::Mapa;
 		}
 	}
 }
@@ -61,19 +63,30 @@ void AInimigoPulador::OnParedeBeginOverlap(UPrimitiveComponent* OverlappedCompon
 	}
 }
 
-void AInimigoPulador::OnChaoEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
-{
-	if (OtherActor && OtherActor != this)
+void AInimigoPulador::Jump()
+{ 
+	if (!VerificarSeTemChao()) Direction *= -1; GetRootComponent()->SetRelativeRotation(FRotator(0.f, Direction < 0 ? -90.f : 90.f, 0.f));
+
+	if (Target == ETargetJump::Player)
 	{
-		if (GetWorldTimerManager().IsTimerActive(TH_Jump)) GetWorldTimerManager().ClearTimer(TH_Jump);
-
-		Direction *= -1;
-
-		GetRootComponent()->SetRelativeRotation(FRotator(0.f, Direction < 0 ? -90.f : 90.f, 0.f));
+		AInimigoPulador::LaunchCharacter(FVector(0.f, 0.f, ForcaDoPulo), false, true);
+	}
+	else
+	{
+		AInimigoPulador::LaunchCharacter(FVector(0.f, Direction * ForcaDoPulo, ForcaDoPulo), true, true);
 	}
 }
 
-void AInimigoPulador::Jump()
+bool AInimigoPulador::VerificarSeTemChao()
 {
-	AInimigoPulador::LaunchCharacter(FVector(0.f, Direction * ForcaDoPulo, ForcaDoPulo), true, true);
+	StartLocation = GetActorLocation() + FVector(0.f, (ForcaDoPulo / 2) * Direction, -35.f);
+	EndLocation = StartLocation + FVector(0.f, 10.f * Direction, -10.f);
+
+	bool Hit = GetWorld()->SweepSingleByChannel(HitResult, StartLocation, EndLocation, BoxRotation, ECC_WorldStatic, CollisionShape, CollisionParams);
+
+	if (Hit)
+	{
+		if (HitResult.GetActor()->ActorHasTag("Mapa")) return true;
+	}
+	return false;
 }

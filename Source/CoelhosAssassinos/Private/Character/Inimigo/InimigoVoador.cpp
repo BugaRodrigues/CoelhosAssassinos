@@ -148,7 +148,7 @@ void AInimigoVoador::OnSeePlayer(UPrimitiveComponent* OverlappedComponent, AActo
 
 		EnemyState = EEnemyState::Chase;
 
-		GetWorldTimerManager().SetTimer(TH_StopSeePlayer, [this]() { EnemyState = EEnemyState::Returning; }, 2.f, false);
+		GetWorldTimerManager().SetTimer(TH_StopSeePlayer, [this]() { EnemyState = EEnemyState::Returning; bIsFollowingPlayer = false; }, 2.f, false);
 	}
 }
 

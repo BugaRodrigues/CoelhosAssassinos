@@ -4,6 +4,13 @@
 #include "PaperCharacter.h"
 #include "InimigoPulador.generated.h"
 
+UENUM()
+enum class ETargetJump : uint8
+{
+	Mapa,
+	Player
+};
+
 UCLASS()
 class COELHOSASSASSINOS_API AInimigoPulador : public APaperCharacter
 {
@@ -24,10 +31,9 @@ class COELHOSASSASSINOS_API AInimigoPulador : public APaperCharacter
 			UFUNCTION()
 			void OnParedeBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
-			UFUNCTION()
-			void OnChaoEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
-
 			void Jump();
+
+			bool VerificarSeTemChao();
 
 		protected:
 			virtual void BeginPlay() override;
@@ -42,9 +48,6 @@ class COELHOSASSASSINOS_API AInimigoPulador : public APaperCharacter
 			UPROPERTY(EditAnywhere)
 			class UBoxComponent* Comp_ParedeCollision;
 
-			UPROPERTY(EditAnywhere)
-			class UBoxComponent* Comp_ChaoCollision;
-
 			UPROPERTY(EditAnywhere, Category = "Stats")
 			float Velocidade;
 
@@ -54,6 +57,17 @@ class COELHOSASSASSINOS_API AInimigoPulador : public APaperCharacter
 			int32 Direction;
 
 			struct FTimerHandle TH_Jump;
+
+			ETargetJump Target;
+
+			FVector StartLocation;
+			FVector EndLocation;
+			FVector BoxExtent;
+
+			struct FCollisionQueryParams CollisionParams;
+			FQuat BoxRotation;
+			struct FCollisionShape CollisionShape;
+			struct FHitResult HitResult;
 
 	#pragma endregion
 	
