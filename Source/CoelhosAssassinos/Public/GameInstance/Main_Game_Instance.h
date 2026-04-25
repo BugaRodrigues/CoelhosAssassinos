@@ -5,27 +5,43 @@
 #include "Interface/SaveGame/Interface_SaveGame.h"
 #include "Main_Game_Instance.generated.h"
 
-class COELHOSASSASSINOS_API Main_Game_Instance : public UGameInstance, public IInterface_SaveGame
+DECLARE_DELEGATE(FOnLoadGameComplete)
+DECLARE_DELEGATE(FOnSaveGameComplete)
+
+UCLASS()
+class COELHOSASSASSINOS_API UMain_Game_Instance : public UGameInstance, public IInterface_SaveGame
 {
 	GENERATED_BODY()
 
 	#pragma region Functions
 
 		public:
-			UFUNCTION()
-			virtual void OnSaveGame() override;
+			virtual void Init() override;
 
-			UFUNCTION()
-			virtual void OnLoadGame() override;
+		private:
+			virtual void SaveGame(bool bAsync = true) override;
+
+			virtual void LoadGame(bool bAsync = false) override;
+
+			virtual class UGame_Save* GetGameData() override;
+
+			void OnAsyncSaveGameComplete(const FString& SlotName, const int32 UserIndex, bool bSuccess);
+
+			void OnAsyncLoadGameComplete(const FString& SlotName, int32 UserIndex, class USaveGame* LoadedGameData);
 
 	#pragma endregion
 
 	#pragma region Variables
 
 		public:
+			FOnLoadGameComplete OnLoadGameComplete;
+			FOnSaveGameComplete OnSaveGameComplete;
 
 		private:
-			const FString SaveSlotName = "MainSaveSlot";
+			const FString SaveSlotName = TEXT("MainSaveSlot");
+
+			UPROPERTY()
+			class UGame_Save* GameSave;
 
 	#pragma endregion
 };

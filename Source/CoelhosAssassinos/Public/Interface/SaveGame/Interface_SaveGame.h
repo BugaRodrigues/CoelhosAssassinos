@@ -12,10 +12,10 @@ class COELHOSASSASSINOS_API IInterface_SaveGame
 	GENERATED_BODY()
 	
 	public:
-		UFUNCTION()
-		virtual void OnSaveGame() = 0;
+		virtual void SaveGame(bool bAsync) = 0;
 
-		UFUNCTION()
-		virtual void OnLoadGame() = 0;
+		virtual void LoadGame(bool bAsync) = 0;
+
+		virtual class UGame_Save* GetGameData() = 0;
 	
 };

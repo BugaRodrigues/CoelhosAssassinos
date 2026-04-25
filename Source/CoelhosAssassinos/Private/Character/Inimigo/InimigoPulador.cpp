@@ -25,15 +25,12 @@ void AInimigoPulador::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	
 	BoxExtent = FVector(10.f, 10.f, 10.f);
 	BoxRotation = GetActorQuat();
 	CollisionParams.AddIgnoredActor(this);
 	CollisionShape = FCollisionShape::MakeBox(BoxExtent);
 
 	GetRootComponent()->SetRelativeRotation(FRotator(0.f, Direction < 0 ? -90.f : 90.f, 0.f));
-
-	Comp_ChaoCollision->SetRelativeLocation(FVector(ForcaDoPulo, 0.f + 10.f, -GetCapsuleComponent()->GetScaledCapsuleHalfHeight() - 10.f));
 
 	GetWorldTimerManager().SetTimer(TH_Jump, this, &AInimigoPulador::Jump, FMath::RandRange(.5f, 1.5f), true, 1.f);
 }
