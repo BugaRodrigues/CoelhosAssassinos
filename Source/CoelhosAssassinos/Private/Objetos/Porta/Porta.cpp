@@ -1,4 +1,5 @@
 #include "Objetos/Porta/Porta.h"
+#include "Interface\/SaveGame/Interface_SaveGame.h"
 #include "GameFramework/GameModeBase.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -10,6 +11,7 @@ APorta::APorta()
 	PrimaryActorTick.bCanEverTick = false;
 
 	bIsOpen = false;
+	SaveData = GetGameInstance()->GetSubsystem<IInterface_SaveGame>()->GetSaveData();
 
 	Comp_BoxCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("Comp_BoxCollision"));
 	SetRootComponent(Comp_BoxCollision);
@@ -42,6 +44,10 @@ void APorta::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherAc
 	if (!OtherActor && OtherActor == this) return;
 
 	if (!OtherActor->ActorHasTag(FName("Player"))) return;
+
+	SaveData->MapaName = FName(*NextLevel.GetAssetName());
+
+	GetGameInstance()->GetSubsystem<IInterface_SaveGame>()->SaveGame(true, SaveData);
 
 	UGameplayStatics::OpenLevel(this, FName(*NextLevel.GetAssetName()));
 }

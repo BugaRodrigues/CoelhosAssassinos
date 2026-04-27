@@ -22,6 +22,12 @@ class COELHOSASSASSINOS_API UMenuPrincipal : public UUserWidget
 			void OnClicked_BTN_Jogar();
 
 			UFUNCTION()
+			void OnClicked_BTN_NewGame();
+
+			UFUNCTION()
+			void OnClicked_BTN_Continuar();
+
+			UFUNCTION()
 			void OnClicked_BTN_Opcoes();
 
 			UFUNCTION()
@@ -38,6 +44,12 @@ class COELHOSASSASSINOS_API UMenuPrincipal : public UUserWidget
 			class UButton* BTN_Jogar;
 
 			UPROPERTY(meta = (BindWidget))
+			class UButton* BTN_NewGame;
+
+			UPROPERTY(meta = (BindWidget))
+			class UButton* BTN_Continuar;
+
+			UPROPERTY(meta = (BindWidget))
 			class UButton* BTN_Opcoes;
 
 			UPROPERTY(meta = (BindWidget))
@@ -45,6 +57,9 @@ class COELHOSASSASSINOS_API UMenuPrincipal : public UUserWidget
 
 			UPROPERTY(EditAnywhere, Category = "Menu")
 			TSoftObjectPtr<UWorld> Mapa;
+
+			UPROPERTY()
+			class UGame_Save* SaveData;
 
 	#pragma endregion
 

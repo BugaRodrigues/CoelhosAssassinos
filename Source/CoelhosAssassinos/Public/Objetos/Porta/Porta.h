@@ -52,6 +52,8 @@ class COELHOSASSASSINOS_API APorta : public AActor
 
 			class AMainGameMode* GameMode;
 
+			class UGame_Save* SaveData;
+
 	#pragma endregion
 	
 };

@@ -44,8 +44,6 @@ class COELHOSASSASSINOS_API ACpp_Player : public APaperCharacter
 			UFUNCTION()
 			virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
-			void TomouDano();
-
 	#pragma endregion
 
 	#pragma region Variaveis
@@ -69,7 +67,7 @@ class COELHOSASSASSINOS_API ACpp_Player : public APaperCharacter
 			TObjectPtr<class UInputAction> JumpAction;
 
 			UPROPERTY(EditAnywhere, Category = "Stats")
-			float Vida;
+			int32 Vida;
 
 			UPROPERTY(EditAnywhere, Category = "Stats")
 			float Dano;
@@ -82,6 +80,8 @@ class COELHOSASSASSINOS_API ACpp_Player : public APaperCharacter
 			float LastDirection;
 
 			struct FTimerHandle TH_TomouDano;
+
+			class UGame_Save* SaveData;
 
 	#pragma endregion
 	

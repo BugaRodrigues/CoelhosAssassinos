@@ -1,15 +1,14 @@
 #include "GameInstance/Main_Game_Instance.h"
 #include "Kismet/GameplayStatics.h"
-#include "SaveGame/Game_Save.h"
 
 void UMain_Game_Instance::Init()
 {
 	Super::Init();
 
-	LoadGame(false);
+	LoadSave(false);
 }
 
-void UMain_Game_Instance::LoadGame(bool bAsync)
+void UMain_Game_Instance::LoadSave(bool bAsync)
 {
 	if (UGameplayStatics::DoesSaveGameExist(SaveSlotName, 0))
 	{
@@ -21,12 +20,12 @@ void UMain_Game_Instance::LoadGame(bool bAsync)
 		}
 		else
 		{
-			GameSave = Cast<UGame_Save>(UGameplayStatics::LoadGameFromSlot(SaveSlotName, 0));
+			SaveData = Cast<UGame_Save>(UGameplayStatics::LoadGameFromSlot(SaveSlotName, 0));
 		}
 	}
 	else 
 	{
-		GameSave = Cast<UGame_Save>(UGameplayStatics::CreateSaveGameObject(UGame_Save::StaticClass()));
+		SaveData = Cast<UGame_Save>(UGameplayStatics::CreateSaveGameObject(UGame_Save::StaticClass()));
 	}
 }
 
@@ -34,7 +33,7 @@ void UMain_Game_Instance::OnAsyncLoadGameComplete(const FString& SlotName, int32
 {
 	if (LoadedGameData)
 	{
-		GameSave = Cast<UGame_Save>(LoadedGameData);
+		SaveData = Cast<UGame_Save>(LoadedGameData);
 
 		OnLoadGameComplete.ExecuteIfBound();
 	}
@@ -44,23 +43,26 @@ void UMain_Game_Instance::OnAsyncLoadGameComplete(const FString& SlotName, int32
 	}
 }
 
-void UMain_Game_Instance::SaveGame(bool bAsync)
+void UMain_Game_Instance::SaveGame(bool bAsync, UGame_Save* NewSaveData)
 {
-	if (!GameSave)
+	if (!SaveData)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Não existe um jogo para ser salvo!!!"));
+
 		return;
 	}
+
+	SaveData = NewSaveData;
 
 	if (bAsync)
 	{
 		auto AsyncSaveDelegate = FAsyncSaveGameToSlotDelegate::CreateUObject(this, &UMain_Game_Instance::OnAsyncSaveGameComplete);
 
-		UGameplayStatics::AsyncSaveGameToSlot(GameSave, SaveSlotName, 0, AsyncSaveDelegate);
+		UGameplayStatics::AsyncSaveGameToSlot(SaveData, SaveSlotName, 0, AsyncSaveDelegate);
 	}
 	else
 	{
-		if (!UGameplayStatics::SaveGameToSlot(GameSave, SaveSlotName, 0))
+		if (!UGameplayStatics::SaveGameToSlot(SaveData, SaveSlotName, 0))
 		{
 			UE_LOG(LogTemp, Error, TEXT("Falha ao salvar o jogo!!!"));
 		}
@@ -79,7 +81,8 @@ void UMain_Game_Instance::OnAsyncSaveGameComplete(const FString& SlotName, const
 	}
 }
 
-UGame_Save* UMain_Game_Instance::GetGameData()
+UGame_Save* UMain_Game_Instance::GetSaveData()
 {
-	return GameSave;
+	return SaveData;
 }
+

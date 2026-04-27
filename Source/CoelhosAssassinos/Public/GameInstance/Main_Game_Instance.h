@@ -19,15 +19,15 @@ class COELHOSASSASSINOS_API UMain_Game_Instance : public UGameInstance, public I
 			virtual void Init() override;
 
 		private:
-			virtual void SaveGame(bool bAsync = true) override;
+			virtual void SaveGame(bool bAsync = true, UGame_Save* NewSaveData) override;
 
-			virtual void LoadGame(bool bAsync = false) override;
+			virtual void LoadSave(bool bAsync = false) override;
 
-			virtual class UGame_Save* GetGameData() override;
+			virtual UGame_Save* GetSaveData() override;
 
 			void OnAsyncSaveGameComplete(const FString& SlotName, const int32 UserIndex, bool bSuccess);
 
-			void OnAsyncLoadGameComplete(const FString& SlotName, int32 UserIndex, class USaveGame* LoadedGameData);
+			void OnAsyncLoadGameComplete(const FString& SlotName, int32 UserIndex, USaveGame* LoadedGameData);
 
 	#pragma endregion
 
@@ -41,7 +41,7 @@ class COELHOSASSASSINOS_API UMain_Game_Instance : public UGameInstance, public I
 			const FString SaveSlotName = TEXT("MainSaveSlot");
 
 			UPROPERTY()
-			class UGame_Save* GameSave;
+			UGame_Save* SaveData;
 
 	#pragma endregion
 };

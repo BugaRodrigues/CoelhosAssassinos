@@ -1,4 +1,5 @@
 #include "Character/Player/Cpp_Player.h"
+#include "Interface/SaveGame/Interface_SaveGame.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/PlayerController.h"
@@ -15,6 +16,9 @@ ACpp_Player::ACpp_Player()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
+	SaveData = GetGameInstance()->GetSubsystem<IInterface_SaveGame>()->GetSaveData();
+
+	Vida = SaveData->Vida;
 	Dano = 10.f;
 	
 	SetRootComponent(GetCapsuleComponent());
@@ -52,15 +56,13 @@ void ACpp_Player::BeginPlay()
 	#pragma endregion
 
 	#pragma region Create Dynamic Material
-		if (GetSprite()->GetMaterial(0))
-		{
-			UMaterialInterface* BaseMaterial = GetSprite()->GetMaterial(0);
+		if (!GetSprite()->GetMaterial(0)) return;
 
-			if (BaseMaterial)
-			{
-				Mat_Inst_Dynamic = GetSprite()->CreateDynamicMaterialInstance(0, BaseMaterial);
-			}
-		}
+		UMaterialInterface* BaseMaterial = GetSprite()->GetMaterial(0);
+
+		if (!BaseMaterial) return;
+			
+		Mat_Inst_Dynamic = GetSprite()->CreateDynamicMaterialInstance(0, BaseMaterial);
 	#pragma endregion
 
 }
@@ -92,20 +94,30 @@ void ACpp_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 float ACpp_Player::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	Vida -= DamageAmount;
+	if (--Vida <= 0)
+	{
+		UGame_Save* NewSaveData = NewObject<UGame_Save>();
+
+		GetGameInstance()->GetSubsystem<IInterface_SaveGame>()->SaveGame(false, NewSaveData);
+
+		UGameplayStatics::OpenLevel(this, GetGameInstance()->GetSubsystem<IInterface_SaveGame>()->GetSaveData()->MapaName);
+	}
+
+	SaveData->Vida = Vida;
+
+	GetGameInstance()->GetSubsystem<IInterface_SaveGame>()->SaveGame(true, SaveData);
 
 	if (!Mat_Inst_Dynamic) return DamageAmount;
 
 	Mat_Inst_Dynamic->SetVectorParameterValue(TEXT("Cor"), FLinearColor::Red);
 
-	GetWorld()->GetTimerManager().SetTimer(TH_TomouDano, this, &ACpp_Player::TomouDano, .075f);
-
-	/*
-	if (Vida <= 0)
+	GetWorldTimerManager().SetTimerForNextTick([this]()
 	{
-		UKismetSystemLibrary::QuitGame();
-	}
-	*/
+		Mat_Inst_Dynamic->SetVectorParameterValue(TEXT("Cor"), FLinearColor::White);
+	});
+
+
+	UGameplayStatics::OpenLevel(this, SaveData->MapaName);
 
 	return DamageAmount;
 }
@@ -172,4 +184,3 @@ void ACpp_Player::UpdateAnimation(EPlayerState State)
 	}
 }
 
-void ACpp_Player::TomouDano() { Mat_Inst_Dynamic->SetVectorParameterValue(TEXT("Cor"), FLinearColor::White); }

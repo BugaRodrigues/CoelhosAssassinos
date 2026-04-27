@@ -4,21 +4,15 @@
 #include "GameFramework/SaveGame.h"
 #include "Game_Save.generated.h"
 
-USTRUCT()
-struct FDataSave
-{
-	GENERATED_BODY()
-
-	UPROPERTY()
-	FName PlayerName;
-};
-
 UCLASS()
 class COELHOSASSASSINOS_API UGame_Save : public USaveGame
 {
 	GENERATED_BODY()
 
 	public:
-		UPROPERTY()
-		FDataSave DataSave;
+		UPROPERTY(EditAnywhere, Category = "Save")
+		FName MapaName = FName("");
+
+		UPROPERTY(EditAnywhere, Category = "Save")
+		int32 Vida = 3;
 };
