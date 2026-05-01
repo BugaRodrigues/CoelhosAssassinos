@@ -84,9 +84,6 @@ class COELHOSASSASSINOS_API ACpp_Player : public APaperCharacter
 			UPROPERTY()
 			class UGame_Save* SaveData;
 
-			UPROPERTY()
-			TScriptInterface<class IInterface_SaveGame> Interface_SG;
-
 			class IInterface_SaveGame* SaveGameInterface;
 
 	#pragma endregion

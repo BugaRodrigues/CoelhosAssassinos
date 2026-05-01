@@ -10,12 +10,6 @@ APorta::APorta()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	SaveGameInterface = Interface_SG.GetInterface();
-
-	if (!SaveGameInterface) { UE_LOG(LogTemp, Error, TEXT("SaveGameInterface is null")); return; }
-
-	SaveData = SaveGameInterface->GetSaveData();
-
 	bIsOpen = false;
 
 	Comp_BoxCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("Comp_BoxCollision"));
@@ -33,13 +27,22 @@ void APorta::BeginPlay()
 {
 	Super::BeginPlay();
 
+	SaveGameInterface = Cast<IInterface_SaveGame>(GetGameInstance());
+
+	if (!SaveGameInterface) { UE_LOG(LogTemp, Error, TEXT("SaveGameInterface is null. (Porta Init)")); return; }
+
+	SaveData = SaveGameInterface->GetSaveData();
+
 	Comp_Sprite->SetSprite(Sprite_Closed ? Sprite_Closed : nullptr);
 
-	GameMode = Cast<AMainGameMode>(GetWorld()->GetAuthGameMode());
-	if (GameMode)
-	{
-		GameMode->OpenGate.BindUObject(this, &APorta::OpenDoor);
-	}
+	#pragma region Get GameMode and Bind Delegate
+		GameMode = Cast<AMainGameMode>(GetWorld()->GetAuthGameMode());
+
+		if (GameMode)
+		{
+			GameMode->OpenGate.BindUObject(this, &APorta::OpenDoor);
+		}
+	#pragma endregion
 }
 
 void APorta::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)

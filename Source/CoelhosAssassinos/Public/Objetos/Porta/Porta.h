@@ -56,9 +56,6 @@ class COELHOSASSASSINOS_API APorta : public AActor
 			UPROPERTY()
 			class UGame_Save* SaveData;
 
-			UPROPERTY()
-			TScriptInterface<class IInterface_SaveGame> Interface_SG;
-
 			class IInterface_SaveGame* SaveGameInterface;
 
 	#pragma endregion

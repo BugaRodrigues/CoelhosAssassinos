@@ -16,14 +16,8 @@ ACpp_Player::ACpp_Player()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	SaveGameInterface = Interface_SG.GetInterface();
-
-	if (!SaveGameInterface) { UE_LOG(LogTemp, Error, TEXT("SaveGameInterface is null")); return; }
-
-	SaveData = SaveGameInterface->GetSaveData();
-	Vida = SaveData->Vida;
 	Dano = 10.f;
-	
+
 	SetRootComponent(GetCapsuleComponent());
 
 	Comp_SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Spring Arm Component"));
@@ -44,6 +38,13 @@ ACpp_Player::ACpp_Player()
 void ACpp_Player::BeginPlay()
 {
 	Super::BeginPlay();
+
+	SaveGameInterface = Cast<IInterface_SaveGame>(GetGameInstance());
+
+	if (!SaveGameInterface) { UE_LOG(LogTemp, Error, TEXT("SaveGameInterface is null. (Player Init)")); return; }
+
+	SaveData = SaveGameInterface->GetSaveData();
+	Vida = SaveData->Vida;
 
 	#pragma region Add Mapping Context 
 		APlayerController* PC = Cast<APlayerController>(Controller);
@@ -99,7 +100,9 @@ float ACpp_Player::TakeDamage(float DamageAmount, FDamageEvent const& DamageEven
 {
 	if (!SaveGameInterface) { UE_LOG(LogTemp, Error, TEXT("SaveGameInterface is null")); return 0.f; }
 
-	if (--Vida <= 0)
+	Vida--;
+
+	if (Vida <= 0)
 	{  
 		UGame_Save* NewSaveData = NewObject<UGame_Save>();
 
