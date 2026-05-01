@@ -81,8 +81,3 @@ void UMain_Game_Instance::OnAsyncSaveGameComplete(const FString& SlotName, const
 	}
 }
 
-UGame_Save* UMain_Game_Instance::GetSaveData()
-{
-	return SaveData;
-}
-

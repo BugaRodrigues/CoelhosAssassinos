@@ -1,5 +1,5 @@
 #include "Objetos/Porta/Porta.h"
-#include "Interface\/SaveGame/Interface_SaveGame.h"
+#include "Interface/SaveGame/Interface_SaveGame.h"
 #include "GameFramework/GameModeBase.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -10,8 +10,13 @@ APorta::APorta()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
+	SaveGameInterface = Interface_SG.GetInterface();
+
+	if (!SaveGameInterface) { UE_LOG(LogTemp, Error, TEXT("SaveGameInterface is null")); return; }
+
+	SaveData = SaveGameInterface->GetSaveData();
+
 	bIsOpen = false;
-	SaveData = GetGameInstance()->GetSubsystem<IInterface_SaveGame>()->GetSaveData();
 
 	Comp_BoxCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("Comp_BoxCollision"));
 	SetRootComponent(Comp_BoxCollision);
@@ -39,6 +44,8 @@ void APorta::BeginPlay()
 
 void APorta::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	if (!SaveGameInterface) UE_LOG(LogTemp, Error, TEXT("SaveGameInterface is null"));
+
 	if (!bIsOpen) return;
 
 	if (!OtherActor && OtherActor == this) return;
@@ -47,7 +54,7 @@ void APorta::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherAc
 
 	SaveData->MapaName = FName(*NextLevel.GetAssetName());
 
-	GetGameInstance()->GetSubsystem<IInterface_SaveGame>()->SaveGame(true, SaveData);
+	SaveGameInterface->SaveGame(true, SaveData);
 
 	UGameplayStatics::OpenLevel(this, FName(*NextLevel.GetAssetName()));
 }

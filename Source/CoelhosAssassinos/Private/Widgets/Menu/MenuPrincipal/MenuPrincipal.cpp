@@ -1,14 +1,20 @@
 #include "Widgets/Menu/MenuPrincipal/MenuPrincipal.h"
 #include "Interface/SaveGame/Interface_SaveGame.h"
 #include "Kismet/GameplayStatics.h"
+#include "Components/MenuAnchor.h"
 #include "Components/Button.h"
+#include "Input/Reply.h"
 
 void UMenuPrincipal::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	SaveData = GetGameInstance()->GetSubsystem<IInterface_SaveGame>()->GetSaveData();
+	GameSave_Interface = Interface_SG.GetInterface();
 	
+	if (!GameSave_Interface) { UE_LOG(LogTemp, Error, TEXT("GameSave_Interface is null")); return; }
+
+	SaveData = GameSave_Interface->GetSaveData();
+
 	BTN_Jogar->OnClicked.AddDynamic(this, &UMenuPrincipal::OnClicked_BTN_Jogar);
 
 	BTN_NewGame->OnClicked.AddDynamic(this, &UMenuPrincipal::OnClicked_BTN_NewGame);
@@ -16,6 +22,22 @@ void UMenuPrincipal::NativeConstruct()
 
 	BTN_Opcoes->OnClicked.AddDynamic(this, &UMenuPrincipal::OnClicked_BTN_Opcoes);
 	BTN_Sair->OnClicked.AddDynamic(this, &UMenuPrincipal::OnClicked_BTN_Sair);
+
+	MenuAnchor_Jogar->Close();
+}
+
+FReply UMenuPrincipal::NativeOnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
+{
+	Super::NativeOnMouseButtonDown(MyGeometry, MouseEvent);
+
+	if (MenuAnchor_Jogar->IsOpen())
+	{
+		MenuAnchor_Jogar->Close();
+
+		return FReply::Handled();
+	}
+
+	return FReply::Unhandled();
 }
 
 void UMenuPrincipal::NativeDestruct()
@@ -26,21 +48,25 @@ void UMenuPrincipal::NativeDestruct()
 
 void UMenuPrincipal::OnClicked_BTN_Jogar()
 {
-	UGameplayStatics::OpenLevel(this, SaveData->MapaName);
+	MenuAnchor_Jogar->Open(true);
 }
 
 void UMenuPrincipal::OnClicked_BTN_NewGame()
 {
+	if (!GameSave_Interface) UE_LOG(LogTemp, Error, TEXT("GameSave_Interface is null"));
+
 	UGame_Save* NewSaveData = NewObject<UGame_Save>();
 
-	GetGameInstance()->GetSubsystem<IInterface_SaveGame>()->SetSaveData(NewSaveData);
+	GameSave_Interface->SaveGame(false, NewSaveData);
 
 	UGameplayStatics::OpenLevel(this, NewSaveData->MapaName);
 }
 
 void UMenuPrincipal::OnClicked_BTN_Continuar()
 {
-	GetGameInstance()->GetSubsystem<IInterface_SaveGame>()->LoadSave(false);
+	if (!GameSave_Interface) UE_LOG(LogTemp, Error, TEXT("GameSave_Interface is null"));
+
+	GameSave_Interface->LoadSave(false);
 
 	UGameplayStatics::OpenLevel(this, SaveData->MapaName);
 }

@@ -19,11 +19,11 @@ class COELHOSASSASSINOS_API UMain_Game_Instance : public UGameInstance, public I
 			virtual void Init() override;
 
 		private:
-			virtual void SaveGame(bool bAsync = true, UGame_Save* NewSaveData) override;
+			virtual void SaveGame(bool bAsync, UGame_Save* NewSaveData) override;
 
-			virtual void LoadSave(bool bAsync = false) override;
+			virtual void LoadSave(bool bAsync) override;
 
-			virtual UGame_Save* GetSaveData() override;
+			virtual UGame_Save* GetSaveData() override { return SaveData; };
 
 			void OnAsyncSaveGameComplete(const FString& SlotName, const int32 UserIndex, bool bSuccess);
 

@@ -21,6 +21,8 @@ public class CoelhosAssassinos : ModuleRules
 
 		PrivateDependencyModuleNames.AddRange(new string[] 
 		{  
-		});
+			"Slate",
+            "SlateCore"
+        });
 	}
 }

@@ -16,8 +16,11 @@ ACpp_Player::ACpp_Player()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	SaveData = GetGameInstance()->GetSubsystem<IInterface_SaveGame>()->GetSaveData();
+	SaveGameInterface = Interface_SG.GetInterface();
 
+	if (!SaveGameInterface) { UE_LOG(LogTemp, Error, TEXT("SaveGameInterface is null")); return; }
+
+	SaveData = SaveGameInterface->GetSaveData();
 	Vida = SaveData->Vida;
 	Dano = 10.f;
 	
@@ -94,18 +97,20 @@ void ACpp_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 float ACpp_Player::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
+	if (!SaveGameInterface) { UE_LOG(LogTemp, Error, TEXT("SaveGameInterface is null")); return 0.f; }
+
 	if (--Vida <= 0)
-	{
+	{  
 		UGame_Save* NewSaveData = NewObject<UGame_Save>();
 
-		GetGameInstance()->GetSubsystem<IInterface_SaveGame>()->SaveGame(false, NewSaveData);
+		SaveGameInterface->SaveGame(false, NewSaveData);
 
-		UGameplayStatics::OpenLevel(this, GetGameInstance()->GetSubsystem<IInterface_SaveGame>()->GetSaveData()->MapaName);
+		UGameplayStatics::OpenLevel(this, SaveGameInterface->GetSaveData()->MapaName);
 	}
 
 	SaveData->Vida = Vida;
 
-	GetGameInstance()->GetSubsystem<IInterface_SaveGame>()->SaveGame(true, SaveData);
+	SaveGameInterface->SaveGame(true, SaveData);
 
 	if (!Mat_Inst_Dynamic) return DamageAmount;
 
@@ -116,8 +121,7 @@ float ACpp_Player::TakeDamage(float DamageAmount, FDamageEvent const& DamageEven
 		Mat_Inst_Dynamic->SetVectorParameterValue(TEXT("Cor"), FLinearColor::White);
 	});
 
-
-	UGameplayStatics::OpenLevel(this, SaveData->MapaName);
+	UGameplayStatics::OpenLevel(this, GetLevel()->GetFName());
 
 	return DamageAmount;
 }

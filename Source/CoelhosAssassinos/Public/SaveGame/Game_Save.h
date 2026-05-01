@@ -11,7 +11,7 @@ class COELHOSASSASSINOS_API UGame_Save : public USaveGame
 
 	public:
 		UPROPERTY(EditAnywhere, Category = "Save")
-		FName MapaName = FName("");
+		FName MapaName = FName("Map_Tutorial");
 
 		UPROPERTY(EditAnywhere, Category = "Save")
 		int32 Vida = 3;

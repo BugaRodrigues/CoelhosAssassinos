@@ -33,6 +33,8 @@ class COELHOSASSASSINOS_API UMenuPrincipal : public UUserWidget
 			UFUNCTION()
 			void OnClicked_BTN_Sair();
 
+			virtual FReply NativeOnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
+
 	#pragma endregion
 
 	#pragma region Variables
@@ -40,26 +42,39 @@ class COELHOSASSASSINOS_API UMenuPrincipal : public UUserWidget
 		public:		
 	
 		protected:
-			UPROPERTY(meta = (BindWidget))
-			class UButton* BTN_Jogar;
+
+			#pragma region Buttons
+
+				UPROPERTY(meta = (BindWidget))
+				class UButton* BTN_Jogar;
+
+				UPROPERTY(meta = (BindWidget))
+				class UButton* BTN_NewGame;
+
+				UPROPERTY(meta = (BindWidget))
+				class UButton* BTN_Continuar;
+
+				UPROPERTY(meta = (BindWidget))
+				class UButton* BTN_Opcoes;
+
+				UPROPERTY(meta = (BindWidget))
+				class UButton* BTN_Sair;
+
+			#pragma endregion
 
 			UPROPERTY(meta = (BindWidget))
-			class UButton* BTN_NewGame;
-
-			UPROPERTY(meta = (BindWidget))
-			class UButton* BTN_Continuar;
-
-			UPROPERTY(meta = (BindWidget))
-			class UButton* BTN_Opcoes;
-
-			UPROPERTY(meta = (BindWidget))
-			class UButton* BTN_Sair;
+			class UMenuAnchor* MenuAnchor_Jogar;
 
 			UPROPERTY(EditAnywhere, Category = "Menu")
 			TSoftObjectPtr<UWorld> Mapa;
 
 			UPROPERTY()
 			class UGame_Save* SaveData;
+
+			UPROPERTY()
+			TScriptInterface<class IInterface_SaveGame> Interface_SG;
+
+			class IInterface_SaveGame* GameSave_Interface;
 
 	#pragma endregion
 
