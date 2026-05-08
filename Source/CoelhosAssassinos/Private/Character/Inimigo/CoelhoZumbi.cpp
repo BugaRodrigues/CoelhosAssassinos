@@ -99,10 +99,6 @@ float ACoelhoZumbi::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 
 	bCanMove = false;
 
-	if (!Mat_Inst_Dynamic) return DamageAmount;
-
-	Mat_Inst_Dynamic->SetVectorParameterValue(TEXT("Cor"), FLinearColor(.17f, .13f, 0.f));
-
 	if (Vida <= 0.f)
 	{
 		bCanMove = false;
@@ -117,16 +113,35 @@ float ACoelhoZumbi::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 
 		GetWorld()->GetTimerManager().SetTimer(TH_Morte, this, &ACoelhoZumbi::Morreu, 1.f);
 		
-		GetWorld()->GetTimerManager().SetTimer(TH_TomouDano, this, &ACoelhoZumbi::TomouDano, .075f);
+		GetWorldTimerManager().SetTimerForNextTick([this]()
+		{
+			if (IsValid(Mat_Inst_Dynamic))
+			{
+				Mat_Inst_Dynamic->SetVectorParameterValue(TEXT("Cor"), FLinearColor::White);
+			}
+		});
 
 		return DamageAmount;
 	}
 
-	GetWorld()->GetTimerManager().SetTimer(TH_StopMove, this, &ACoelhoZumbi::StopMove, .5f);
+	if (IsValid(Mat_Inst_Dynamic))
+	{
+		Mat_Inst_Dynamic->SetVectorParameterValue(TEXT("Cor"), FLinearColor(.17f, .13f, 0.f));
 
-	GetWorld()->GetTimerManager().SetTimer(TH_TomouDano, this, &ACoelhoZumbi::TomouDano, .1f);
+		GetWorldTimerManager().SetTimerForNextTick([this]()
+		{
+			if (IsValid(Mat_Inst_Dynamic))
+			{
+				Mat_Inst_Dynamic->SetVectorParameterValue(TEXT("Cor"), FLinearColor::White);
+			}
+		});
+	}
+
+	GetWorldTimerManager().SetTimerForNextTick([this]()
+	{
+		bCanMove = true;
+	});
 
 	return DamageAmount;
 }
 
-void ACoelhoZumbi::TomouDano() { Mat_Inst_Dynamic->SetVectorParameterValue(TEXT("Cor"), FLinearColor::White); }

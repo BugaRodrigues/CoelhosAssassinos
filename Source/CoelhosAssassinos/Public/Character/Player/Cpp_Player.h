@@ -44,6 +44,12 @@ class COELHOSASSASSINOS_API ACpp_Player : public APaperCharacter
 			UFUNCTION()
 			virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
+			void AddMappingContext();
+
+			void CreateDynamicMaterial();
+
+			void AddWidgetToViewport();
+
 	#pragma endregion
 
 	#pragma region Variaveis
@@ -85,6 +91,12 @@ class COELHOSASSASSINOS_API ACpp_Player : public APaperCharacter
 			class UGame_Save* SaveData;
 
 			class IInterface_SaveGame* SaveGameInterface;
+
+			UPROPERTY(EditAnywhere, Category = "Widgets")
+			TSubclassOf<class UContadorDeVida> ContadorVidaClass;
+
+			UPROPERTY()
+			class UContadorDeVida* ContadorVida;
 
 	#pragma endregion
 	

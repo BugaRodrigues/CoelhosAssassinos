@@ -57,7 +57,7 @@ void APorta::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherAc
 
 	SaveData->MapaName = FName(*NextLevel.GetAssetName());
 
-	SaveGameInterface->SaveGame(true, SaveData);
+	SaveGameInterface->SaveGame(false, SaveData);
 
 	UGameplayStatics::OpenLevel(this, FName(*NextLevel.GetAssetName()));
 }

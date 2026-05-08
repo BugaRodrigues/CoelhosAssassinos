@@ -2,6 +2,7 @@
 #include "Interface/SaveGame/Interface_SaveGame.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Widgets/Contador/ContadorDeVida.h"
 #include "GameFramework/PlayerController.h"
 #include "Components/CapsuleComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -46,29 +47,9 @@ void ACpp_Player::BeginPlay()
 	SaveData = SaveGameInterface->GetSaveData();
 	Vida = SaveData->Vida;
 
-	#pragma region Add Mapping Context 
-		APlayerController* PC = Cast<APlayerController>(Controller);
-		if (!PC) return;
-
-		UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer());
-		if (!Subsystem) return;
-
-		if (MappingContext)
-		{
-			Subsystem->AddMappingContext(MappingContext, 0);
-		}
-	#pragma endregion
-
-	#pragma region Create Dynamic Material
-		if (!GetSprite()->GetMaterial(0)) return;
-
-		UMaterialInterface* BaseMaterial = GetSprite()->GetMaterial(0);
-
-		if (!BaseMaterial) return;
-			
-		Mat_Inst_Dynamic = GetSprite()->CreateDynamicMaterialInstance(0, BaseMaterial);
-	#pragma endregion
-
+	AddWidgetToViewport();
+	AddMappingContext();
+	CreateDynamicMaterial();
 }
 
 void ACpp_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -109,22 +90,30 @@ float ACpp_Player::TakeDamage(float DamageAmount, FDamageEvent const& DamageEven
 		SaveGameInterface->SaveGame(false, NewSaveData);
 
 		UGameplayStatics::OpenLevel(this, SaveGameInterface->GetSaveData()->MapaName);
+
+		return DamageAmount;
 	}
 
 	SaveData->Vida = Vida;
 
-	SaveGameInterface->SaveGame(true, SaveData);
+	ContadorVida->SetVida(Vida);
 
-	if (!Mat_Inst_Dynamic) return DamageAmount;
+	SaveGameInterface->SaveGame(false, SaveData);
 
-	Mat_Inst_Dynamic->SetVectorParameterValue(TEXT("Cor"), FLinearColor::Red);
-
-	GetWorldTimerManager().SetTimerForNextTick([this]()
+	if (IsValid(Mat_Inst_Dynamic))
 	{
-		Mat_Inst_Dynamic->SetVectorParameterValue(TEXT("Cor"), FLinearColor::White);
-	});
+		Mat_Inst_Dynamic->SetVectorParameterValue(TEXT("Cor"), FLinearColor::Red);
 
-	UGameplayStatics::OpenLevel(this, GetLevel()->GetFName());
+		GetWorldTimerManager().SetTimerForNextTick([this]()
+		{
+			if (IsValid(Mat_Inst_Dynamic))
+			{
+				Mat_Inst_Dynamic->SetVectorParameterValue(TEXT("Cor"), FLinearColor::White);
+			}
+		});
+	}
+
+	UGameplayStatics::OpenLevel(this, SaveData->MapaName);
 
 	return DamageAmount;
 }
@@ -157,17 +146,9 @@ void ACpp_Player::Move(const FInputActionValue& Value)
 	LastDirection = Value.Get<float>();
 }
 
-void ACpp_Player::StartJump()
-{
-	Jump();
+void ACpp_Player::StartJump() { Jump(); UpdateAnimation(EPlayerState::Jumping); }
 
-	UpdateAnimation(EPlayerState::Jumping);
-}
-
-void ACpp_Player::StopJump()
-{
-	StopJumping();
-}
+void ACpp_Player::StopJump() { StopJumping(); }
 
 void ACpp_Player::UpdateAnimation(EPlayerState State)
 {
@@ -191,3 +172,40 @@ void ACpp_Player::UpdateAnimation(EPlayerState State)
 	}
 }
 
+void ACpp_Player::AddMappingContext()
+{
+	APlayerController* PC = Cast<APlayerController>(Controller);
+	if (!PC) return;
+
+	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer());
+	if (!Subsystem) return;
+
+	if (MappingContext)
+	{
+		Subsystem->AddMappingContext(MappingContext, 0);
+
+	}
+}
+
+void ACpp_Player::CreateDynamicMaterial()
+{
+	if (!GetSprite()->GetMaterial(0)) return;
+
+	UMaterialInterface* BaseMaterial = GetSprite()->GetMaterial(0);
+
+	if (!BaseMaterial) return;
+
+	Mat_Inst_Dynamic = GetSprite()->CreateDynamicMaterialInstance(0, BaseMaterial);
+}
+
+void ACpp_Player::AddWidgetToViewport()
+{
+	if (!ContadorVidaClass) return;
+
+	ContadorVida = CreateWidget<UContadorDeVida>(GetWorld(), ContadorVidaClass);
+
+	if (!ContadorVida) return;
+
+	ContadorVida->AddToViewport();
+	ContadorVida->SetVida(Vida);
+}

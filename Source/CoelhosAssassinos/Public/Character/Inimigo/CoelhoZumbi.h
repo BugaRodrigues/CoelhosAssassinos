@@ -21,8 +21,6 @@ class COELHOSASSASSINOS_API ACoelhoZumbi : public APaperCharacter
 		protected:
 			virtual void BeginPlay() override;
 
-			void StopMove() { bCanMove = true; };
-
 			UFUNCTION()
 			void OnEndCollisionChao(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
@@ -31,8 +29,6 @@ class COELHOSASSASSINOS_API ACoelhoZumbi : public APaperCharacter
 
 			UFUNCTION()
 			void OnInimigoBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
-			void TomouDano();
 
 			void Morreu() { Destroy(); };
 
@@ -65,11 +61,7 @@ class COELHOSASSASSINOS_API ACoelhoZumbi : public APaperCharacter
 
 			bool bCanMove;
 
-			struct FTimerHandle TH_TomouDano;
-
 			struct FTimerHandle TH_Morte;
-
-			struct FTimerHandle TH_StopMove;
 
 	#pragma endregion
 
