@@ -46,7 +46,7 @@ void APlataformaMovel::Tick(float DeltaTime)
 		Direction = -1;
 		bCanMove = false;
 
-		GetWorld()->GetTimerManager().SetTimer(TH_Esperar, this, &APlataformaMovel::Esperar, 1.f);
+		GetWorldTimerManager().SetTimer(TH_Esperar, this, &APlataformaMovel::Esperar, 1.f);
 	}
 	else if (CurrentDistance <= 0.f)
 	{
@@ -54,7 +54,7 @@ void APlataformaMovel::Tick(float DeltaTime)
 		Direction = 1;
 		bCanMove = false;
 
-		GetWorld()->GetTimerManager().SetTimer(TH_Esperar, this, &APlataformaMovel::Esperar, 1.f);
+		GetWorldTimerManager().SetTimer(TH_Esperar, this, &APlataformaMovel::Esperar, 1.f);
 	}
 
 	Comp_BoxCollision->SetWorldLocation(Comp_Spline->GetLocationAtDistanceAlongSpline(CurrentDistance, ESplineCoordinateSpace::World));

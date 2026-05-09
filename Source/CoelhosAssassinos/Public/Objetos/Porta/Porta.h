@@ -14,8 +14,6 @@ class COELHOSASSASSINOS_API APorta : public AActor
 		public:	
 			APorta();
 
-			//virtual void Tick(float DeltaTime) override;
-
 		protected:
 			virtual void BeginPlay() override;
 
@@ -25,6 +23,9 @@ class COELHOSASSASSINOS_API APorta : public AActor
 			void OpenDoor();
 
 			virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
+			UFUNCTION()
+			void OnSaveGameComplete();
 
 	#pragma endregion
 
@@ -57,6 +58,8 @@ class COELHOSASSASSINOS_API APorta : public AActor
 			class UGame_Save* SaveData;
 
 			class IInterface_SaveGame* SaveGameInterface;
+
+			class UMain_Game_Instance* GameInstance;
 
 	#pragma endregion
 	

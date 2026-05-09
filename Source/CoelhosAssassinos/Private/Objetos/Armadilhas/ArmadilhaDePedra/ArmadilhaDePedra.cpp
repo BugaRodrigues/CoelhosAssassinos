@@ -53,7 +53,7 @@ void AArmadilhaDePedra::OnPlayerPassou(UPrimitiveComponent* OverlappedComponent,
 
 	CurrentState = EFallingState::Falling;
 
-	GetWorld()->GetTimerManager().SetTimer(TH_Falling, this, &AArmadilhaDePedra::StartFalling, 0.01f, true);
+	GetWorldTimerManager().SetTimer(TH_Falling, this, &AArmadilhaDePedra::StartFalling, 0.01f, true);
 }
 
 void AArmadilhaDePedra::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -64,17 +64,17 @@ void AArmadilhaDePedra::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent,
 	{
 		UGameplayStatics::ApplyDamage(OtherActor, Damage, nullptr, this, UDamageType::StaticClass());
 
-		GetWorld()->GetTimerManager().ClearTimer(TH_Falling);
+		GetWorldTimerManager().ClearTimer(TH_Falling);
 
-		GetWorld()->GetTimerManager().SetTimer(TH_Returning, this, &AArmadilhaDePedra::StartReturning, 0.01f, true);
+		GetWorldTimerManager().SetTimer(TH_Returning, this, &AArmadilhaDePedra::StartReturning, 0.01f, true);
 	}
 	else if (OtherActor->ActorHasTag(FName("Mapa")))
 	{
 		CurrentState = EFallingState::Returning;
 
-		GetWorld()->GetTimerManager().ClearTimer(TH_Falling);
+		GetWorldTimerManager().ClearTimer(TH_Falling);
 
-		GetWorld()->GetTimerManager().SetTimer(TH_Returning, this, &AArmadilhaDePedra::StartReturning, 0.01f, true, 1.f);
+		GetWorldTimerManager().SetTimer(TH_Returning, this, &AArmadilhaDePedra::StartReturning, 0.01f, true, 1.f);
 	}
 }
 
@@ -103,9 +103,9 @@ void AArmadilhaDePedra::StartFalling()
 	{
 		CurrentState = EFallingState::Returning;
 
-		GetWorld()->GetTimerManager().ClearTimer(TH_Falling);
+		GetWorldTimerManager().ClearTimer(TH_Falling);
 
-		GetWorld()->GetTimerManager().SetTimer(TH_Returning, this, &AArmadilhaDePedra::StartReturning, 0.01f, true);
+		GetWorldTimerManager().SetTimer(TH_Returning, this, &AArmadilhaDePedra::StartReturning, 0.01f, true);
 
 		return;
 	}
@@ -125,7 +125,7 @@ void AArmadilhaDePedra::StartReturning()
 
 		CurrentState = EFallingState::Idle;
 
-		GetWorld()->GetTimerManager().ClearTimer(TH_Returning);
+		GetWorldTimerManager().ClearTimer(TH_Returning);
 
 		return;
 	}

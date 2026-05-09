@@ -1,5 +1,5 @@
 #include "Widgets/Menu/MenuPrincipal/MenuPrincipal_Jogar.h"
-#include "Interface/SaveGame/Interface_SaveGame.h"
+#include "GameInstance/Main_Game_Instance.h"
 #include "Components/WidgetSwitcher.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/Button.h"
@@ -8,9 +8,16 @@ void UMenuPrincipal_Jogar::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	GameSave_Interface = Cast<IInterface_SaveGame>(GetGameInstance());
+	GameInstance = Cast<UMain_Game_Instance>(GetGameInstance());
 
-	if (!GameSave_Interface) { UE_LOG(LogTemp, Error, TEXT("GameSave_Interface is null. (Menu Principal Init)")); return; }
+	if (IsValid(GameInstance))
+	{
+		GameInstance->OnSaveGameComplete.BindUObject(this, &UMenuPrincipal_Jogar::OnSaveGameComplete);
+	
+		GameSave_Interface = Cast<IInterface_SaveGame>(GetGameInstance());
+	}
+
+	if (!GameSave_Interface) { UE_LOG(LogTemp, Error, TEXT("GameSave_Interface or GameInstance is null. (Menu Principal Init)")); return; }
 
 	SaveData = GameSave_Interface->GetSaveData();
 
@@ -26,17 +33,26 @@ void UMenuPrincipal_Jogar::NativeDestruct()
 	BTN_NewGame->OnClicked.RemoveDynamic(this, &UMenuPrincipal_Jogar::OnClicked_BTN_NewGame);
 	BTN_Continuar->OnClicked.RemoveDynamic(this, &UMenuPrincipal_Jogar::OnClicked_BTN_Continuar);
 	BTN_Voltar->OnClicked.RemoveDynamic(this, &UMenuPrincipal_Jogar::OnClicked_BTN_Voltar);
+
+	if (IsValid(GameInstance)) GameInstance->OnSaveGameComplete.Unbind();
 }
 
 void UMenuPrincipal_Jogar::OnClicked_BTN_NewGame()
 {
 	if (GameSave_Interface)
 	{
-		UGame_Save* NewSaveData = Cast<UGame_Save>(NewObject<UGame_Save>());
+		SaveData = NewObject<UGame_Save>();
 
-		GameSave_Interface->SaveGame(false, NewSaveData);
+		if (IsValid(GameInstance))
+		{ 
+			GameSave_Interface->SaveGame(true, SaveData);
+		}
+		else
+		{
+			GameSave_Interface->SaveGame(false, SaveData);
 
-		UGameplayStatics::OpenLevel(this, NewSaveData->MapaName);
+			OnSaveGameComplete();
+		}
 	}
 	else
 	{
@@ -66,4 +82,9 @@ void UMenuPrincipal_Jogar::OnClicked_BTN_Voltar()
 	{
 		UE_LOG(LogTemp, Error, TEXT("WS_Menu is null. (Menu Principal Back)"));
 	}
+}
+
+void UMenuPrincipal_Jogar::OnSaveGameComplete()
+{
+	UGameplayStatics::OpenLevel(this, SaveData->MapaName);
 }

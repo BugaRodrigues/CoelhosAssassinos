@@ -27,6 +27,8 @@ class COELHOSASSASSINOS_API UMenuPrincipal_Jogar : public UUserWidget
 			UFUNCTION()
 			void OnClicked_BTN_Voltar();
 
+			UFUNCTION()
+			void OnSaveGameComplete();
 
 	#pragma endregion
 
@@ -48,6 +50,8 @@ class COELHOSASSASSINOS_API UMenuPrincipal_Jogar : public UUserWidget
 			class UGame_Save* SaveData;
 
 			class IInterface_SaveGame* GameSave_Interface;
+
+			class UMain_Game_Instance* GameInstance;
 
 	#pragma endregion
 };

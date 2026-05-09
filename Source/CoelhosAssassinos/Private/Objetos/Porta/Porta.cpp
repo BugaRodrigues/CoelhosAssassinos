@@ -1,5 +1,5 @@
 #include "Objetos/Porta/Porta.h"
-#include "Interface/SaveGame/Interface_SaveGame.h"
+#include "GameInstance/Main_Game_Instance.h"
 #include "GameFramework/GameModeBase.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -27,9 +27,16 @@ void APorta::BeginPlay()
 {
 	Super::BeginPlay();
 
-	SaveGameInterface = Cast<IInterface_SaveGame>(GetGameInstance());
+	GameInstance = Cast<UMain_Game_Instance>(GetGameInstance());
 
-	if (!SaveGameInterface) { UE_LOG(LogTemp, Error, TEXT("SaveGameInterface is null. (Porta Init)")); return; }
+	if (IsValid(GameInstance))
+	{
+		GameInstance->OnSaveGameComplete.BindUObject(this, &APorta::OnSaveGameComplete);
+
+		SaveGameInterface = Cast<IInterface_SaveGame>(GameInstance);
+	}
+
+	if (!SaveGameInterface) { UE_LOG(LogTemp, Error, TEXT("SaveGameInterface or GameInstance is null. (Porta Init)")); return; }
 
 	SaveData = SaveGameInterface->GetSaveData();
 
@@ -57,24 +64,37 @@ void APorta::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherAc
 
 	SaveData->MapaName = FName(*NextLevel.GetAssetName());
 
-	SaveGameInterface->SaveGame(false, SaveData);
-
-	UGameplayStatics::OpenLevel(this, FName(*NextLevel.GetAssetName()));
-}
-
-void APorta::EndPlay(const EEndPlayReason::Type EndPlayReason)
-{
-	Super::EndPlay(EndPlayReason);
-
-	if (GameMode)
+	if (IsValid(GameInstance))
 	{
-		GameMode->OpenGate.Unbind();
+		SaveGameInterface->SaveGame(true, SaveData);
+	}
+	else
+	{
+		SaveGameInterface->SaveGame(false, SaveData);
+
+		OnSaveGameComplete();
 	}
 }
-
 void APorta::OpenDoor()
 {
 	bIsOpen = true;
 
 	Comp_Sprite->SetSprite(Sprite_Open ? Sprite_Open : nullptr);
+}
+
+void APorta::OnSaveGameComplete() { UGameplayStatics::OpenLevel(this, FName(*NextLevel.GetAssetName())); }
+
+void APorta::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+
+	if (EndPlayReason == EEndPlayReason::Quit)
+	{
+		if (GameMode)
+		{
+			GameMode->OpenGate.Unbind();
+		}
+
+		if (IsValid(GameInstance)) GameInstance->OnSaveGameComplete.Unbind();
+	}
 }

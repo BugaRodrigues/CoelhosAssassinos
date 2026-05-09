@@ -1,7 +1,7 @@
 #include "Character/Player/Cpp_Player.h"
-#include "Interface/SaveGame/Interface_SaveGame.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "GameInstance/Main_Game_Instance.h"
 #include "Widgets/Contador/ContadorDeVida.h"
 #include "GameFramework/PlayerController.h"
 #include "Components/CapsuleComponent.h"
@@ -40,9 +40,16 @@ void ACpp_Player::BeginPlay()
 {
 	Super::BeginPlay();
 
-	SaveGameInterface = Cast<IInterface_SaveGame>(GetGameInstance());
+	GameInstance = Cast<UMain_Game_Instance>(GetGameInstance());
 
-	if (!SaveGameInterface) { UE_LOG(LogTemp, Error, TEXT("SaveGameInterface is null. (Player Init)")); return; }
+	 if (GameInstance)
+	 {
+		GameInstance->OnSaveGameComplete.BindUObject(this, &ACpp_Player::OnSaveGameComplete);
+
+		SaveGameInterface = Cast<IInterface_SaveGame>(GameInstance);
+	 }
+
+	if (!SaveGameInterface) { UE_LOG(LogTemp, Error, TEXT("SaveGameInterface or GameInstance is null. (Player Init)")); return; }
 
 	SaveData = SaveGameInterface->GetSaveData();
 	Vida = SaveData->Vida;
@@ -85,20 +92,25 @@ float ACpp_Player::TakeDamage(float DamageAmount, FDamageEvent const& DamageEven
 
 	if (Vida <= 0)
 	{  
-		UGame_Save* NewSaveData = NewObject<UGame_Save>();
+		SaveData = NewObject<UGame_Save>();
 
-		SaveGameInterface->SaveGame(false, NewSaveData);
+		if (IsValid(GameInstance))
+		{
+			SaveGameInterface->SaveGame(true, SaveData);
+		}
+		else
+		{
+			SaveGameInterface->SaveGame(false, SaveData);
 
-		UGameplayStatics::OpenLevel(this, SaveGameInterface->GetSaveData()->MapaName);
+			OnSaveGameComplete();
+		}
 
 		return DamageAmount;
 	}
 
 	SaveData->Vida = Vida;
-
+	
 	ContadorVida->SetVida(Vida);
-
-	SaveGameInterface->SaveGame(false, SaveData);
 
 	if (IsValid(Mat_Inst_Dynamic))
 	{
@@ -113,7 +125,16 @@ float ACpp_Player::TakeDamage(float DamageAmount, FDamageEvent const& DamageEven
 		});
 	}
 
-	UGameplayStatics::OpenLevel(this, SaveData->MapaName);
+	if (IsValid(GameInstance))
+	{
+		SaveGameInterface->SaveGame(true, SaveData);
+	}
+	else
+	{
+		SaveGameInterface->SaveGame(false, SaveData);
+
+		OnSaveGameComplete();
+	}
 
 	return DamageAmount;
 }
@@ -208,4 +229,18 @@ void ACpp_Player::AddWidgetToViewport()
 
 	ContadorVida->AddToViewport();
 	ContadorVida->SetVida(Vida);
+}
+
+void ACpp_Player::OnSaveGameComplete() { UGameplayStatics::OpenLevel(this, SaveData->MapaName); }
+
+void ACpp_Player::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+
+	if (EndPlayReason == EEndPlayReason::Quit)
+	{
+		if (!IsValid(GameInstance)) return;
+	
+		GameInstance->OnSaveGameComplete.Unbind();
+	}
 }

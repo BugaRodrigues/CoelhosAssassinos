@@ -29,6 +29,8 @@ class COELHOSASSASSINOS_API UMain_Game_Instance : public UGameInstance, public I
 
 			void OnAsyncLoadGameComplete(const FString& SlotName, int32 UserIndex, USaveGame* LoadedGameData);
 
+			void AddSavingAndLoadingWidget(bool bIsSaving);
+
 	#pragma endregion
 
 	#pragma region Variables
@@ -42,6 +44,12 @@ class COELHOSASSASSINOS_API UMain_Game_Instance : public UGameInstance, public I
 
 			UPROPERTY()
 			UGame_Save* SaveData;
+
+			UPROPERTY(EditDefaultsOnly, Category = "Widget")
+			TSubclassOf<class USaving_E_Loading> SavingAndLoadin_WidgetClass;
+
+			UPROPERTY()
+			class USaving_E_Loading* SavingAndLoading_Widget;
 
 	#pragma endregion
 };

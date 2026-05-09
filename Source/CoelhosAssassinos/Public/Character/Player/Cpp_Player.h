@@ -24,8 +24,6 @@ class COELHOSASSASSINOS_API ACpp_Player : public APaperCharacter
 		public:
 			ACpp_Player();
 
-			//virtual void Tick(float DeltaTime) override;
-
 			virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 		protected:
@@ -49,6 +47,11 @@ class COELHOSASSASSINOS_API ACpp_Player : public APaperCharacter
 			void CreateDynamicMaterial();
 
 			void AddWidgetToViewport();
+
+			UFUNCTION()
+			void OnSaveGameComplete();
+
+			virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 	#pragma endregion
 
@@ -97,6 +100,8 @@ class COELHOSASSASSINOS_API ACpp_Player : public APaperCharacter
 
 			UPROPERTY()
 			class UContadorDeVida* ContadorVida;
+
+			class UMain_Game_Instance* GameInstance;
 
 	#pragma endregion
 	
