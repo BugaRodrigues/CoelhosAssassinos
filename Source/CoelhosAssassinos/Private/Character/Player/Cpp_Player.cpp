@@ -139,7 +139,7 @@ float ACpp_Player::TakeDamage(float DamageAmount, FDamageEvent const& DamageEven
 			{
 				Mat_Inst_Dynamic->SetVectorParameterValue(TEXT("Cor"), FLinearColor::White);
 			}
-		}, 0.5f, false);
+		}, 0.1f, false);
 	}
 
 	return DamageAmount;
