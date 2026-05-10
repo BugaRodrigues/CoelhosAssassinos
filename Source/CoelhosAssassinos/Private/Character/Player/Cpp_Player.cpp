@@ -44,15 +44,22 @@ void ACpp_Player::BeginPlay()
 
 	 if (GameInstance)
 	 {
-		GameInstance->OnSaveGameComplete.BindUObject(this, &ACpp_Player::OnSaveGameComplete);
-
 		SaveGameInterface = Cast<IInterface_SaveGame>(GameInstance);
 	 }
+	 else
+	 {
+		 UE_LOG(LogTemp, Error, TEXT("GameInstance is null"));
+	 }
 
-	if (!SaveGameInterface) { UE_LOG(LogTemp, Error, TEXT("SaveGameInterface or GameInstance is null. (Player Init)")); return; }
-
-	SaveData = SaveGameInterface->GetSaveData();
-	Vida = SaveData->Vida;
+	if (SaveGameInterface) 
+	{ 
+		SaveData = SaveGameInterface->GetSaveData();
+		Vida = SaveData->Vida;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("SaveGameInterface is null"));
+	}
 
 	AddWidgetToViewport();
 	AddMappingContext();
@@ -97,43 +104,42 @@ float ACpp_Player::TakeDamage(float DamageAmount, FDamageEvent const& DamageEven
 		if (IsValid(GameInstance))
 		{
 			SaveGameInterface->SaveGame(true, SaveData);
+
+			UWorld* World = GetWorld();
+			FName MapaName = SaveData->MapaName;
+
+			GameInstance->OnSaveGameComplete.BindLambda([World, MapaName]()
+			{
+				UGameplayStatics::OpenLevel(World, MapaName);
+			});
 		}
 		else
 		{
 			SaveGameInterface->SaveGame(false, SaveData);
 
-			OnSaveGameComplete();
+			UGameplayStatics::OpenLevel(this, SaveData->MapaName);
 		}
 
 		return DamageAmount;
 	}
 
 	SaveData->Vida = Vida;
-	
+
+	SaveGameInterface->SaveGame(true, SaveData);
+
 	ContadorVida->SetVida(Vida);
 
 	if (IsValid(Mat_Inst_Dynamic))
 	{
 		Mat_Inst_Dynamic->SetVectorParameterValue(TEXT("Cor"), FLinearColor::Red);
 
-		GetWorldTimerManager().SetTimerForNextTick([this]()
+		GetWorldTimerManager().SetTimer(TH_TomouDano, [this]() 
 		{
 			if (IsValid(Mat_Inst_Dynamic))
 			{
 				Mat_Inst_Dynamic->SetVectorParameterValue(TEXT("Cor"), FLinearColor::White);
 			}
-		});
-	}
-
-	if (IsValid(GameInstance))
-	{
-		SaveGameInterface->SaveGame(true, SaveData);
-	}
-	else
-	{
-		SaveGameInterface->SaveGame(false, SaveData);
-
-		OnSaveGameComplete();
+		}, 0.5f, false);
 	}
 
 	return DamageAmount;
@@ -231,16 +237,15 @@ void ACpp_Player::AddWidgetToViewport()
 	ContadorVida->SetVida(Vida);
 }
 
-void ACpp_Player::OnSaveGameComplete() { UGameplayStatics::OpenLevel(this, SaveData->MapaName); }
-
 void ACpp_Player::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
 
-	if (EndPlayReason == EEndPlayReason::Quit)
+	if (EndPlayReason == EEndPlayReason::LevelTransition || EndPlayReason == EEndPlayReason::Destroyed)
 	{
-		if (!IsValid(GameInstance)) return;
-	
-		GameInstance->OnSaveGameComplete.Unbind();
+		if (IsValid(GameInstance))
+		{
+			GameInstance->OnSaveGameComplete.Unbind();
+		}
 	}
 }

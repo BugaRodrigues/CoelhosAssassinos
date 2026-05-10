@@ -48,9 +48,6 @@ class COELHOSASSASSINOS_API ACpp_Player : public APaperCharacter
 
 			void AddWidgetToViewport();
 
-			UFUNCTION()
-			void OnSaveGameComplete();
-
 			virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 	#pragma endregion

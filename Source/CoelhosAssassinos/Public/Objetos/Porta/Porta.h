@@ -24,9 +24,6 @@ class COELHOSASSASSINOS_API APorta : public AActor
 
 			virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
-			UFUNCTION()
-			void OnSaveGameComplete();
-
 	#pragma endregion
 
 	#pragma region Variables

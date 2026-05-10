@@ -2,6 +2,7 @@
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/BoxComponent.h" 
+#include "Kismet/GameplayStatics.h"
 #include "PaperFlipbookComponent.h"
 #include "TimerManager.h"
 
@@ -34,6 +35,7 @@ void ACoelhoZumbi::BeginPlay()
 	Direction = GetRootComponent()->GetRelativeRotation().Yaw > 0 ? 1 : -1;
 
 	#pragma region Create Dynamic Material
+
 		if (GetSprite()->GetMaterial(0))
 		{
 			UMaterialInterface* BaseMaterial = GetSprite()->GetMaterial(0);
@@ -43,6 +45,7 @@ void ACoelhoZumbi::BeginPlay()
 				Mat_Inst_Dynamic = GetSprite()->CreateDynamicMaterialInstance(0, BaseMaterial);
 			}
 		}
+
 	#pragma endregion
 
 }
@@ -83,13 +86,28 @@ void ACoelhoZumbi::OnBeginCollisionParede(UPrimitiveComponent* OverlappedComp, A
 
 void ACoelhoZumbi::OnInimigoBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor)
+	if (OtherActor && OtherActor != this)
 	{
 		if (!OtherActor->ActorHasTag("Player")) return;
 
-		Direction *= -1;
+		FVector PlayerLocation = OtherActor->GetActorLocation();
+		FVector InimigoLocation = GetActorLocation();
 
-		Cast<APaperCharacter>(OtherActor)->LaunchCharacter(FVector(0.f, -100.f * Direction, 250.f), true, true);
+		if (PlayerLocation.Z < InimigoLocation.Z + (GetCapsuleComponent()->GetScaledCapsuleHalfHeight() / 2))
+		{
+			Cast<APaperCharacter>(OtherActor)->LaunchCharacter(FVector(0.f, (PlayerLocation.Y > InimigoLocation.Y) ? 2500.f : -2500.f, 250.f), true, true);
+
+			UGameplayStatics::ApplyDamage(OtherActor, 1.f, nullptr, this, nullptr);
+		}
+		else
+		{
+			GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
+
+			GetWorldTimerManager().SetTimerForNextTick([this]()
+			{
+				GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+			});
+		}
 	}
 }
 
@@ -144,4 +162,3 @@ float ACoelhoZumbi::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 
 	return DamageAmount;
 }
-

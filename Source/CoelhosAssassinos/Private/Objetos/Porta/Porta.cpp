@@ -31,8 +31,6 @@ void APorta::BeginPlay()
 
 	if (IsValid(GameInstance))
 	{
-		GameInstance->OnSaveGameComplete.BindUObject(this, &APorta::OnSaveGameComplete);
-
 		SaveGameInterface = Cast<IInterface_SaveGame>(GameInstance);
 	}
 
@@ -67,12 +65,11 @@ void APorta::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherAc
 	if (IsValid(GameInstance))
 	{
 		SaveGameInterface->SaveGame(true, SaveData);
-	}
-	else
-	{
-		SaveGameInterface->SaveGame(false, SaveData);
 
-		OnSaveGameComplete();
+		GameInstance->OnSaveGameComplete.BindLambda([this]()
+		{
+			UGameplayStatics::OpenLevel(this, FName(*NextLevel.GetAssetName()));
+		});
 	}
 }
 void APorta::OpenDoor()
@@ -81,8 +78,6 @@ void APorta::OpenDoor()
 
 	Comp_Sprite->SetSprite(Sprite_Open ? Sprite_Open : nullptr);
 }
-
-void APorta::OnSaveGameComplete() { UGameplayStatics::OpenLevel(this, FName(*NextLevel.GetAssetName())); }
 
 void APorta::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
@@ -94,7 +89,5 @@ void APorta::EndPlay(const EEndPlayReason::Type EndPlayReason)
 		{
 			GameMode->OpenGate.Unbind();
 		}
-
-		if (IsValid(GameInstance)) GameInstance->OnSaveGameComplete.Unbind();
 	}
 }
