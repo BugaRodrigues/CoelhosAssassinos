@@ -11,7 +11,23 @@ enum class EPlayerState : uint8
 	Walking UMETA(DisplayName = "Walking"),
 	Jumping UMETA(DisplayName = "Jmuping"),
 	Falling UMETA(DisplayName = "Falling"),
-	Death UMETA(DisplayName = "Death")
+	Landing UMETA(DisplayName = "Landing")
+};
+
+USTRUCT()
+struct FPlayerAnimations
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere)
+	class UPaperFlipbook* Run;
+
+	UPROPERTY(EditAnywhere)
+	class UPaperFlipbook* Jump;
+
+	UPROPERTY(EditAnywhere)
+	class UPaperFlipbook* Falling;
+
 };
 
 UCLASS()
@@ -30,6 +46,8 @@ class COELHOSASSASSINOS_API ACpp_Player : public APaperCharacter
 			virtual void BeginPlay() override;
 
 			virtual void Landed(const FHitResult& Hit) override;
+
+			virtual void OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode = 0) override;
 
 			void Move(const struct FInputActionValue& Value);
 
@@ -61,7 +79,10 @@ class COELHOSASSASSINOS_API ACpp_Player : public APaperCharacter
 			class USpringArmComponent* Comp_SpringArm;
 
 			UPROPERTY(EditAnywhere)
-			class UCameraComponent* Comp_Camera;
+			class UCameraComponent* Comp_Camera;	
+
+			UPROPERTY(EditAnywhere, Category = "Animations")
+			struct FPlayerAnimations Animations;
 
 			UPROPERTY(EditAnywhere, Category = "Mapping Input")
 			TObjectPtr<class UInputMappingContext> MappingContext;

@@ -1,4 +1,5 @@
 #include "Character/Player/Cpp_Player.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameInstance/Main_Game_Instance.h"
@@ -32,7 +33,7 @@ ACpp_Player::ACpp_Player()
 	Comp_Camera->SetupAttachment(Comp_SpringArm, USpringArmComponent::SocketName);
 	Comp_Camera->bAutoCalculateOrthoPlanes = false;
 	Comp_Camera->ProjectionMode = ECameraProjectionMode::Orthographic;
-
+	
 	Tags.Add(FName("Player"));
 }
 
@@ -64,6 +65,7 @@ void ACpp_Player::BeginPlay()
 	AddWidgetToViewport();
 	AddMappingContext();
 	CreateDynamicMaterial();
+	UpdateAnimation(EPlayerState::Idle);
 }
 
 void ACpp_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -149,6 +151,8 @@ void ACpp_Player::Landed(const FHitResult& Hit)
 {
 	Super::Landed(Hit);
 
+	UpdateAnimation(EPlayerState::Landing);
+
 	if (Hit.GetActor())
 	{
 		if (!Hit.GetActor()->ActorHasTag("Inimigo")) return;
@@ -156,6 +160,16 @@ void ACpp_Player::Landed(const FHitResult& Hit)
 		LaunchCharacter(FVector(0.f, 0.f, 750.f), false, true);
 
 		UGameplayStatics::ApplyDamage(Hit.GetActor(), Dano, GetController(), this, UDamageType::StaticClass());
+	}
+}
+
+void ACpp_Player::OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode)
+{
+	Super::OnMovementModeChanged(PrevMovementMode, PreviousCustomMode);
+
+	if (GetCharacterMovement()->MovementMode == MOVE_Falling)
+	{
+		UpdateAnimation(EPlayerState::Falling);
 	}
 }
 
@@ -182,17 +196,41 @@ void ACpp_Player::UpdateAnimation(EPlayerState State)
 	switch (State)
 	{
 		case EPlayerState::Idle:
+			if (GetSprite()->GetFlipbook() != Animations.Run)
+			{
+				GetSprite()->SetFlipbook(Animations.Run ? Animations.Run : nullptr);
+			}
+			GetSprite()->SetPlaybackPositionInFrames(0, false);
+			GetSprite()->Stop();
 			return;
 		case EPlayerState::Walking:
-
+			if (GetSprite()->GetFlipbook() != Animations.Run)
+			{
+				GetSprite()->SetFlipbook(Animations.Run ? Animations.Run : nullptr);
+			}
+			GetSprite()->Play();
 			GetSprite()->SetRelativeRotation(FRotator(0., bIsWalkingRight ? 0. : 180., 0. ));
-
 			return;
 		case EPlayerState::Jumping:
+			if (GetSprite()->GetFlipbook() != Animations.Jump)
+			{
+				GetSprite()->SetFlipbook(Animations.Jump ? Animations.Jump : nullptr);
+			}
 			return;
 		case EPlayerState::Falling:
+			if (GetSprite()->GetFlipbook() != Animations.Falling)
+			{
+				GetSprite()->SetFlipbook(Animations.Falling ? Animations.Falling : nullptr);
+			}
+			GetSprite()->SetPlaybackPositionInFrames(0, false);
+			GetSprite()->Stop();
 			return;
-		case EPlayerState::Death:
+		case EPlayerState::Landing:
+			if (GetSprite()->GetFlipbook() != Animations.Falling)
+			{
+				GetSprite()->SetFlipbook(Animations.Falling ? Animations.Falling : nullptr);
+			}
+			GetSprite()->Play();
 			return;
 		default:
 			return;

@@ -11,6 +11,18 @@ enum class ETargetJump : uint8
 	Player
 };
 
+USTRUCT()
+struct FEnemyAnimations
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere)
+	class UPaperFlipbook* Jump;
+
+	UPROPERTY(EditAnywhere)
+	class UPaperFlipbook* Falling;
+};
+
 UCLASS()
 class COELHOSASSASSINOS_API AInimigoPulador : public APaperCharacter
 {
@@ -31,12 +43,18 @@ class COELHOSASSASSINOS_API AInimigoPulador : public APaperCharacter
 			UFUNCTION()
 			void OnParedeBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
+		protected:
+			virtual void BeginPlay() override;
+
+			virtual void OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode = 0) override;
+
 			void Jump();
+
+			virtual void Landed(const FHitResult& Hit) override;
 
 			bool VerificarSeTemChao();
 
-		protected:
-			virtual void BeginPlay() override;
+			FRotator SetDirectionRotation(int32 NewDirection);
 
 	#pragma endregion
 
@@ -54,9 +72,13 @@ class COELHOSASSASSINOS_API AInimigoPulador : public APaperCharacter
 			UPROPERTY(EditAnywhere, Category = "Stats")
 			float ForcaDoPulo;
 
+			UPROPERTY(EditAnywhere, Category = "Animations")
+			struct FEnemyAnimations Animations;
+
 			int32 Direction;
 
 			struct FTimerHandle TH_Jump;
+			struct FTimerHandle TH_AnimJump;
 
 			ETargetJump Target;
 

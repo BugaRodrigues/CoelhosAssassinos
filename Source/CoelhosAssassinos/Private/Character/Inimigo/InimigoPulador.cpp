@@ -1,7 +1,9 @@
 #include "Character/Inimigo/InimigoPulador.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/BoxComponent.h"
+#include "PaperFlipbookComponent.h"
 #include "TimerManager.h"
 
 AInimigoPulador::AInimigoPulador()
@@ -9,7 +11,7 @@ AInimigoPulador::AInimigoPulador()
 	PrimaryActorTick.bCanEverTick = false;
 
 	Velocidade = 300.f;
-	ForcaDoPulo = 250.f;
+	ForcaDoPulo = 500.f;
 	Direction = 1;
 
 	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &AInimigoPulador::OnBeginOverlap);
@@ -30,9 +32,39 @@ void AInimigoPulador::BeginPlay()
 	CollisionParams.AddIgnoredActor(this);
 	CollisionShape = FCollisionShape::MakeBox(BoxExtent);
 
-	GetRootComponent()->SetRelativeRotation(FRotator(0.f, Direction < 0 ? -90.f : 90.f, 0.f));
+	GetSprite()->SetFlipbook(Animations.Jump ? Animations.Jump : nullptr);
+	GetSprite()->SetLooping(false);
+	GetSprite()->SetPlaybackPositionInFrames(0, false);
+	GetSprite()->Stop();
+
+	GetRootComponent()->SetRelativeRotation(SetDirectionRotation(Direction));
 
 	GetWorldTimerManager().SetTimer(TH_Jump, this, &AInimigoPulador::Jump, FMath::RandRange(.5f, 1.5f), true, 1.f);
+}
+
+void AInimigoPulador::OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode)
+{
+	Super::OnMovementModeChanged(PrevMovementMode, PreviousCustomMode);
+
+	if (GetCharacterMovement()->MovementMode == MOVE_Falling)
+	{
+		GetSprite()->SetFlipbook(Animations.Falling ? Animations.Falling : nullptr);
+		GetSprite()->SetPlaybackPositionInFrames(0, false);
+		GetSprite()->Stop();
+	}
+}
+
+void AInimigoPulador::Landed(const FHitResult& Hit)
+{
+	Super::Landed(Hit);
+
+	if (GetSprite()->GetFlipbook() != Animations.Falling)
+	{
+		GetSprite()->SetFlipbook(Animations.Falling ? Animations.Falling : nullptr);
+		GetSprite()->SetPlaybackPositionInFrames(0, false);
+		GetSprite()->Stop();
+	}
+	GetSprite()->PlayFromStart();
 }
 
 void AInimigoPulador::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -54,24 +86,35 @@ void AInimigoPulador::OnParedeBeginOverlap(UPrimitiveComponent* OverlappedCompon
 {
 	if (OtherActor && OtherActor != this)
 	{
-		Direction *= -1;
-
-		GetRootComponent()->SetRelativeRotation(FRotator(0.f, Direction < 0 ? -90.f : 90.f, 0.f));
+		GetRootComponent()->SetRelativeRotation(SetDirectionRotation(Direction *= -1));
 	}
 }
 
 void AInimigoPulador::Jump()
 { 
-	if (!VerificarSeTemChao()) Direction *= -1; GetRootComponent()->SetRelativeRotation(FRotator(0.f, Direction < 0 ? -90.f : 90.f, 0.f));
+	if (!VerificarSeTemChao())
+	{
+		GetRootComponent()->SetRelativeRotation(SetDirectionRotation(Direction *= -1));
+	}
 
 	if (Target == ETargetJump::Player)
 	{
+		GetSprite()->SetRelativeRotation(SetDirectionRotation(Direction));
 		AInimigoPulador::LaunchCharacter(FVector(0.f, 0.f, ForcaDoPulo), false, true);
 	}
 	else
 	{
 		AInimigoPulador::LaunchCharacter(FVector(0.f, Direction * ForcaDoPulo, ForcaDoPulo), true, true);
 	}
+
+	if (GetSprite()->GetFlipbook() != Animations.Jump)
+	{
+		GetSprite()->SetFlipbook(Animations.Jump ? Animations.Jump : nullptr);
+		GetSprite()->SetLooping(false);
+	}
+
+	GetSprite()->PlayFromStart();
+	GetWorldTimerManager().SetTimer(TH_AnimJump, [this]() { GetSprite()->Stop(); }, GetSprite()->GetFlipbookLength(), false);
 }
 
 bool AInimigoPulador::VerificarSeTemChao()
@@ -86,4 +129,11 @@ bool AInimigoPulador::VerificarSeTemChao()
 		if (HitResult.GetActor()->ActorHasTag("Mapa")) return true;
 	}
 	return false;
+}
+
+FRotator AInimigoPulador::SetDirectionRotation(int32 NewDirection)
+{
+	Direction = (NewDirection >= 0) ? 1 : -1;
+	float YawRotation = (Direction < 0) ? -90.f : 90.f;
+	return FRotator(0.f, YawRotation, 0.f);
 }
