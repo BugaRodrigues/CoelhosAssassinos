@@ -41,26 +41,28 @@ void ACpp_Player::BeginPlay()
 {
 	Super::BeginPlay();
 
-	GameInstance = Cast<UMain_Game_Instance>(GetGameInstance());
+	#pragma region SaveGame
+		GameInstance = Cast<UMain_Game_Instance>(GetGameInstance());
 
-	 if (GameInstance)
-	 {
-		SaveGameInterface = Cast<IInterface_SaveGame>(GameInstance);
-	 }
-	 else
-	 {
-		 UE_LOG(LogTemp, Error, TEXT("GameInstance is null"));
-	 }
+		 if (GameInstance)
+		 {
+			SaveGameInterface = Cast<IInterface_SaveGame>(GameInstance);
+		 }
+		 else
+		 {
+			 UE_LOG(LogTemp, Error, TEXT("GameInstance is null"));
+		 }
 
-	if (SaveGameInterface) 
-	{ 
-		SaveData = SaveGameInterface->GetSaveData();
-		Vida = SaveData->Vida;
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("SaveGameInterface is null"));
-	}
+		if (SaveGameInterface) 
+		{ 
+			SaveData = SaveGameInterface->GetSaveData();
+			Vida = SaveData->Vida;
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("SaveGameInterface is null"));
+		}
+	#pragma endregion
 
 	AddWidgetToViewport();
 	AddMappingContext();
@@ -151,10 +153,12 @@ void ACpp_Player::Landed(const FHitResult& Hit)
 {
 	Super::Landed(Hit);
 
-	UpdateAnimation(EPlayerState::Landing);
-
 	if (Hit.GetActor())
 	{
+		UpdateAnimation(EPlayerState::Landing);
+
+		GetWorldTimerManager().ClearTimer(TH_TestFalling);
+
 		if (!Hit.GetActor()->ActorHasTag("Inimigo")) return;
 
 		LaunchCharacter(FVector(0.f, 0.f, 750.f), false, true);
@@ -169,22 +173,35 @@ void ACpp_Player::OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 Pr
 
 	if (GetCharacterMovement()->MovementMode == MOVE_Falling)
 	{
-		UpdateAnimation(EPlayerState::Falling);
+		if (GetVelocity().Z < 0.f)
+		{
+			GetWorldTimerManager().SetTimer(TH_TestFalling, [this]()
+			{
+				GEngine->AddOnScreenDebugMessage(-1, .1f, FColor::Blue, FString::Printf(TEXT("Z Velocity: %f"), GetVelocity().Z));
+			}, .1f, true);
+
+			UpdateAnimation(EPlayerState::Falling);
+		}
 	}
 }
 
 void ACpp_Player::Move(const FInputActionValue& Value)
 {
-	AddMovementInput(FVector(0.f, 1.f, 0.f), Value.Get<float>());
+	float MoveForce = Value.Get<float>();
 
-	bIsWalkingRight = Value.Get<float>() > 0;
+	AddMovementInput(FVector(0.f, 1.f, 0.f), MoveForce);
 
-	if (Value.Get<float>() != LastDirection || LastDirection == 0.f)
+	if (FMath::IsNearlyZero(MoveForce))
 	{
-		UpdateAnimation(Value.Get<float>() == 0.f ? EPlayerState::Idle : EPlayerState::Walking);
+		UpdateAnimation(EPlayerState::Idle);
 	}
+	else if (MoveForce != LastDirection || LastDirection == 0.f)
+	{
+		bIsWalkingRight = MoveForce > 0;
 
-	LastDirection = Value.Get<float>();
+		UpdateAnimation(EPlayerState::Walking);
+	}
+	LastDirection = MoveForce;
 }
 
 void ACpp_Player::StartJump() { Jump(); UpdateAnimation(EPlayerState::Jumping); }
@@ -196,41 +213,56 @@ void ACpp_Player::UpdateAnimation(EPlayerState State)
 	switch (State)
 	{
 		case EPlayerState::Idle:
-			if (GetSprite()->GetFlipbook() != Animations.Run)
+
+			GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Blue, TEXT("Parado"));
+
+			/*if (GetSprite()->GetFlipbook() != Animations.Run)
 			{
 				GetSprite()->SetFlipbook(Animations.Run ? Animations.Run : nullptr);
 			}
 			GetSprite()->SetPlaybackPositionInFrames(0, false);
-			GetSprite()->Stop();
+			GetSprite()->Stop();*/
 			return;
 		case EPlayerState::Walking:
-			if (GetSprite()->GetFlipbook() != Animations.Run)
+
+			GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Blue, FString::Printf(TEXT("Andando para %s"), bIsWalkingRight ? TEXT("direita") : TEXT("esquerda")));
+
+			/*if (GetSprite()->GetFlipbook() != Animations.Run)
 			{
 				GetSprite()->SetFlipbook(Animations.Run ? Animations.Run : nullptr);
 			}
-			GetSprite()->Play();
+			GetSprite()->Play();*/
 			GetSprite()->SetRelativeRotation(FRotator(0., bIsWalkingRight ? 0. : 180., 0. ));
 			return;
 		case EPlayerState::Jumping:
-			if (GetSprite()->GetFlipbook() != Animations.Jump)
+
+			GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Blue, TEXT("Pulo"));
+
+			/*if (GetSprite()->GetFlipbook() != Animations.Jump)
 			{
 				GetSprite()->SetFlipbook(Animations.Jump ? Animations.Jump : nullptr);
-			}
+			}*/
 			return;
 		case EPlayerState::Falling:
-			if (GetSprite()->GetFlipbook() != Animations.Falling)
+
+			GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Blue, TEXT("Caindo"));
+
+			/*if (GetSprite()->GetFlipbook() != Animations.Falling)
 			{
 				GetSprite()->SetFlipbook(Animations.Falling ? Animations.Falling : nullptr);
 			}
 			GetSprite()->SetPlaybackPositionInFrames(0, false);
-			GetSprite()->Stop();
+			GetSprite()->Stop();*/
 			return;
 		case EPlayerState::Landing:
-			if (GetSprite()->GetFlipbook() != Animations.Falling)
+
+			GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Blue, TEXT("Queda"));
+
+			/*if (GetSprite()->GetFlipbook() != Animations.Falling)
 			{
 				GetSprite()->SetFlipbook(Animations.Falling ? Animations.Falling : nullptr);
 			}
-			GetSprite()->Play();
+			GetSprite()->Play();*/
 			return;
 		default:
 			return;

@@ -108,6 +108,8 @@ class COELHOSASSASSINOS_API ACpp_Player : public APaperCharacter
 
 			struct FTimerHandle TH_TomouDano;
 
+			struct FTimerHandle TH_TestFalling;
+
 			UPROPERTY()
 			class UGame_Save* SaveData;
 

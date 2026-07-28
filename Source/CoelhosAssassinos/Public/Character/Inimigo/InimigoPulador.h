@@ -11,6 +11,14 @@ enum class ETargetJump : uint8
 	Player
 };
 
+UENUM()
+enum class EEnemyAnimState : uint8
+{
+	Jumping,
+	Falling,
+	Landed
+};
+
 USTRUCT()
 struct FEnemyAnimations
 {
@@ -55,6 +63,8 @@ class COELHOSASSASSINOS_API AInimigoPulador : public APaperCharacter
 			bool VerificarSeTemChao();
 
 			FRotator SetDirectionRotation(int32 NewDirection);
+
+			void UpdateAnimation(EEnemyAnimState EnemyState);
 
 	#pragma endregion
 

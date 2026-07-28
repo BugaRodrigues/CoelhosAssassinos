@@ -46,25 +46,14 @@ void AInimigoPulador::OnMovementModeChanged(EMovementMode PrevMovementMode, uint
 {
 	Super::OnMovementModeChanged(PrevMovementMode, PreviousCustomMode);
 
-	if (GetCharacterMovement()->MovementMode == MOVE_Falling)
-	{
-		GetSprite()->SetFlipbook(Animations.Falling ? Animations.Falling : nullptr);
-		GetSprite()->SetPlaybackPositionInFrames(0, false);
-		GetSprite()->Stop();
-	}
+	if (GetCharacterMovement()->MovementMode == MOVE_Falling) UpdateAnimation(EEnemyAnimState::Falling);
 }
 
 void AInimigoPulador::Landed(const FHitResult& Hit)
 {
 	Super::Landed(Hit);
 
-	if (GetSprite()->GetFlipbook() != Animations.Falling)
-	{
-		GetSprite()->SetFlipbook(Animations.Falling ? Animations.Falling : nullptr);
-		GetSprite()->SetPlaybackPositionInFrames(0, false);
-		GetSprite()->Stop();
-	}
-	GetSprite()->PlayFromStart();
+	UpdateAnimation(EEnemyAnimState::Landed);
 }
 
 void AInimigoPulador::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -107,14 +96,7 @@ void AInimigoPulador::Jump()
 		AInimigoPulador::LaunchCharacter(FVector(0.f, Direction * ForcaDoPulo, ForcaDoPulo), true, true);
 	}
 
-	if (GetSprite()->GetFlipbook() != Animations.Jump)
-	{
-		GetSprite()->SetFlipbook(Animations.Jump ? Animations.Jump : nullptr);
-		GetSprite()->SetLooping(false);
-	}
-
-	GetSprite()->PlayFromStart();
-	GetWorldTimerManager().SetTimer(TH_AnimJump, [this]() { GetSprite()->Stop(); }, GetSprite()->GetFlipbookLength(), false);
+	UpdateAnimation(EEnemyAnimState::Jumping);
 }
 
 bool AInimigoPulador::VerificarSeTemChao()
@@ -136,4 +118,47 @@ FRotator AInimigoPulador::SetDirectionRotation(int32 NewDirection)
 	Direction = (NewDirection >= 0) ? 1 : -1;
 	float YawRotation = (Direction < 0) ? -90.f : 90.f;
 	return FRotator(0.f, YawRotation, 0.f);
+}
+
+void AInimigoPulador::UpdateAnimation(EEnemyAnimState EnemyState)
+{
+	switch (EnemyState)
+	{
+		case EEnemyAnimState::Jumping:
+
+			GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, TEXT("Jumping"));
+
+			/*if (GetSprite()->GetFlipbook() != Animations.Jump)
+			{
+				GetSprite()->SetFlipbook(Animations.Jump ? Animations.Jump : nullptr);
+				GetSprite()->SetLooping(false);
+			}
+			GetSprite()->PlayFromStart();*/
+			break;
+		case EEnemyAnimState::Falling:
+
+			GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, TEXT("Falling"));
+
+			/*if (GetSprite()->GetFlipbook() != Animations.Falling)
+			{
+				GetSprite()->SetFlipbook(Animations.Falling ? Animations.Falling : nullptr);
+				GetSprite()->SetPlaybackPositionInFrames(0, false);
+				GetSprite()->Stop();
+			}*/
+			break;
+		case EEnemyAnimState::Landed:
+
+			GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, TEXT("Landed"));
+
+			/*if (GetSprite()->GetFlipbook() != Animations.Falling)
+			{
+				GetSprite()->SetFlipbook(Animations.Falling ? Animations.Falling : nullptr);
+				GetSprite()->SetPlaybackPositionInFrames(0, false);
+				GetSprite()->Stop();
+			}
+			GetSprite()->PlayFromStart();*/
+			break;
+		default:
+			break;
+	}
 }
