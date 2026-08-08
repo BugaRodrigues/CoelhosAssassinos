@@ -4,32 +4,6 @@
 #include "PaperCharacter.h"
 #include "Cpp_Player.generated.h"
 
-UENUM()
-enum class EPlayerState : uint8
-{
-	Idle UMETA(DisplayName = "Idle"),
-	Walking UMETA(DisplayName = "Walking"),
-	Jumping UMETA(DisplayName = "Jmuping"),
-	Falling UMETA(DisplayName = "Falling"),
-	Landing UMETA(DisplayName = "Landing")
-};
-
-USTRUCT()
-struct FPlayerAnimations
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere)
-	class UPaperFlipbook* Run;
-
-	UPROPERTY(EditAnywhere)
-	class UPaperFlipbook* Jump;
-
-	UPROPERTY(EditAnywhere)
-	class UPaperFlipbook* Falling;
-
-};
-
 UCLASS()
 class COELHOSASSASSINOS_API ACpp_Player : public APaperCharacter
 {
@@ -47,15 +21,13 @@ class COELHOSASSASSINOS_API ACpp_Player : public APaperCharacter
 
 			virtual void Landed(const FHitResult& Hit) override;
 
-			virtual void OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode = 0) override;
+			//virtual void Tick(float DeltaTime) override;
 
 			void Move(const struct FInputActionValue& Value);
 
 			void StartJump();
 
 			void StopJump();
-
-			void UpdateAnimation(EPlayerState State);
 
 			UFUNCTION()
 			virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
@@ -82,7 +54,7 @@ class COELHOSASSASSINOS_API ACpp_Player : public APaperCharacter
 			class UCameraComponent* Comp_Camera;	
 
 			UPROPERTY(EditAnywhere, Category = "Animations")
-			struct FPlayerAnimations Animations;
+			TObjectPtr<class UPaperZDAnimationComponent> Comp_Animation;
 
 			UPROPERTY(EditAnywhere, Category = "Mapping Input")
 			TObjectPtr<class UInputMappingContext> MappingContext;
@@ -102,24 +74,18 @@ class COELHOSASSASSINOS_API ACpp_Player : public APaperCharacter
 			UPROPERTY()
 			class UMaterialInstanceDynamic* Mat_Inst_Dynamic;
 
-			bool bIsWalkingRight;
-
-			float LastDirection;
-
-			struct FTimerHandle TH_TomouDano;
-
-			struct FTimerHandle TH_TestFalling;
-
 			UPROPERTY()
 			class UGame_Save* SaveData;
 
-			class IInterface_SaveGame* SaveGameInterface;
+			UPROPERTY()
+			class UContadorDeVida* ContadorVida;
 
 			UPROPERTY(EditAnywhere, Category = "Widgets")
 			TSubclassOf<class UContadorDeVida> ContadorVidaClass;
 
-			UPROPERTY()
-			class UContadorDeVida* ContadorVida;
+			struct FTimerHandle TH_TomouDano;
+
+			class IInterface_SaveGame* SaveGameInterface;
 
 			class UMain_Game_Instance* GameInstance;
 

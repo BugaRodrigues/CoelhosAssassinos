@@ -13,7 +13,6 @@ AInimigoVoador::AInimigoVoador()
 	PatrolSpeed = 600.f;
 	ChaseSpeed = 1200.f;
 	bIsFollowingPlayer = false;
-	Direction = 1;
 
 	SetRootComponent(GetCapsuleComponent());
 	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &AInimigoVoador::OnInimigoBeginOverlap);
@@ -29,14 +28,14 @@ void AInimigoVoador::BeginPlay()
 {
 	Super::BeginPlay();
 
+	Direction = GetRootComponent()->GetRelativeRotation().Yaw > 0 ? 1 : -1;
+
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
 	
 	QueryParams.AddIgnoredActor(this);
 	OriginalLocation = GetActorLocation();
 
 	SetSeeingPlayerCollision();
-
-	GetRootComponent()->SetRelativeRotation(FRotator(0.f, Direction < 0 ? -90.f : 90.f, 0.f));
 }
 
 void AInimigoVoador::Tick(float DeltaTime)
@@ -110,7 +109,7 @@ void AInimigoVoador::HandleReturning(float DeltaTime)
 
 	AddMovementInput(DirectionToOriginal, ChaseSpeed * DeltaTime);
 
-	SetActorRotation(DirectionToOriginal.Rotation());
+	SetActorRotation(FRotator(0.f, DirectionToOriginal.Rotation().Yaw, 0.f));
 
 	if ((GetActorLocation() - OriginalLocation).SizeSquared() <= FMath::Square(5.f))
 	{
