@@ -90,14 +90,9 @@ void ACoelhoZumbi::OnInimigoBeginOverlap(UPrimitiveComponent* OverlappedComp, AA
 	{
 		if (!OtherActor->ActorHasTag("Player")) return;
 
-		FVector PlayerLocation = OtherActor->GetActorLocation();
-		FVector InimigoLocation = GetActorLocation();
-
-		if (PlayerLocation.Z < InimigoLocation.Z + (GetCapsuleComponent()->GetScaledCapsuleHalfHeight() / 2))
+		if (OtherActor->GetActorLocation().Z < GetActorLocation().Z + (GetCapsuleComponent()->GetScaledCapsuleHalfHeight() / 2))
 		{
-			Cast<APaperCharacter>(OtherActor)->LaunchCharacter(FVector(0.f, (PlayerLocation.Y > InimigoLocation.Y) ? 2500.f : -2500.f, 250.f), true, true);
-
-			UGameplayStatics::ApplyDamage(OtherActor, 1.f, nullptr, this, nullptr);
+			UGameplayStatics::ApplyDamage(OtherActor, 1.f, GetController(), this, UDamageType::StaticClass());
 		}
 		else
 		{

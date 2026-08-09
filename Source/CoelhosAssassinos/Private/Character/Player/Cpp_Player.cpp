@@ -1,7 +1,6 @@
 #include "Character/Player/Cpp_Player.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
-#include "GameFramework/SpringArmComponent.h"
 #include "GameInstance/Main_Game_Instance.h"
 #include "Widgets/Contador/ContadorDeVida.h"
 #include "GameFramework/PlayerController.h"
@@ -10,7 +9,6 @@
 #include "EnhancedInputSubsystems.h"
 #include "Kismet/GameplayStatics.h"
 #include "EnhancedInputComponent.h"
-#include "Camera/CameraComponent.h"
 #include "PaperFlipbookComponent.h"
 #include "InputActionValue.h"
 #include "TimerManager.h"
@@ -22,18 +20,6 @@ ACpp_Player::ACpp_Player()
 	Dano = 10.f;
 
 	SetRootComponent(GetCapsuleComponent());
-
-	Comp_SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Spring Arm Component"));
-	Comp_SpringArm->SetupAttachment(RootComponent);
-	Comp_SpringArm->SetRelativeLocationAndRotation(FVector(0.f, 0.f, 50.f), FRotator(0.f, -90.f, 0.f));
-	Comp_SpringArm->TargetArmLength = 700.f;
-	Comp_SpringArm->bEnableCameraLag = true;
-	Comp_SpringArm->CameraLagSpeed = 100.f;
-
-	Comp_Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera Component"));
-	Comp_Camera->SetupAttachment(Comp_SpringArm, USpringArmComponent::SocketName);
-	Comp_Camera->bAutoCalculateOrthoPlanes = false;
-	Comp_Camera->ProjectionMode = ECameraProjectionMode::Orthographic;
 	
 	Comp_Animation = CreateDefaultSubobject<UPaperZDAnimationComponent>(TEXT("Animation Component"));
 
@@ -43,6 +29,8 @@ ACpp_Player::ACpp_Player()
 void ACpp_Player::BeginPlay()
 {
 	Super::BeginPlay();
+
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 
 	#pragma region SaveGame
 		GameInstance = Cast<UMain_Game_Instance>(GetGameInstance());
@@ -68,7 +56,7 @@ void ACpp_Player::BeginPlay()
 	#pragma endregion
 
 	AddWidgetToViewport();
-	AddMappingContext();
+	AddMappingContext(true);
 	CreateDynamicMaterial();
 }
 
@@ -99,38 +87,22 @@ void ACpp_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 float ACpp_Player::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
+	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
 	if (!SaveGameInterface) { UE_LOG(LogTemp, Error, TEXT("SaveGameInterface is null")); return 0.f; }
 
 	Vida--;
 
-	if (Vida <= 0)
-	{  
-		SaveData = NewObject<UGame_Save>();
+	LaunchCharacter(FVector(-50.f, 0.f, 750.f), true, true);
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	AddMappingContext(false);
 
-		if (IsValid(GameInstance))
-		{
-			SaveGameInterface->SaveGame(true, SaveData);
-
-			UWorld* World = GetWorld();
-			FName MapaName = SaveData->MapaName;
-
-			GameInstance->OnSaveGameComplete.BindLambda([World, MapaName]()
-			{
-				UGameplayStatics::OpenLevel(World, MapaName);
-			});
-		}
-		else
-		{
-			SaveGameInterface->SaveGame(false, SaveData);
-
-			UGameplayStatics::OpenLevel(this, SaveData->MapaName);
-		}
-
-		return DamageAmount;
-	}
+	FName MapaName = FName(GetWorld()->GetName());
+	float TempoDeQueda = ((-2.f * (750.f * 2)) / GetCharacterMovement()->GetGravityZ()) + 0.2f;
+	
+	GetWorldTimerManager().SetTimer(TH_ReiniciarMapa, this, &ACpp_Player::ReiniciarMapa, TempoDeQueda, false);
 
 	SaveData->Vida = Vida;
-
 	SaveGameInterface->SaveGame(true, SaveData);
 
 	ContadorVida->SetVida(Vida);
@@ -139,16 +111,42 @@ float ACpp_Player::TakeDamage(float DamageAmount, FDamageEvent const& DamageEven
 	{
 		Mat_Inst_Dynamic->SetVectorParameterValue(TEXT("Cor"), FLinearColor::Red);
 
-		GetWorldTimerManager().SetTimer(TH_TomouDano, [this]() 
+		TWeakObjectPtr<ACpp_Player> WeakSelf(this);
+		GetWorldTimerManager().SetTimer(TH_TomouDano, FTimerDelegate::CreateLambda([WeakSelf]()
 		{
-			if (IsValid(Mat_Inst_Dynamic))
+			if (ACpp_Player* StrongSelf = WeakSelf.Get())
 			{
-				Mat_Inst_Dynamic->SetVectorParameterValue(TEXT("Cor"), FLinearColor::White);
+				if (IsValid(StrongSelf->Mat_Inst_Dynamic))
+				{
+					StrongSelf->Mat_Inst_Dynamic->SetVectorParameterValue(TEXT("Cor"), FLinearColor::White);
+				}
 			}
-		}, 0.1f, false);
+		}), 0.1f, false);
 	}
 
 	return DamageAmount;
+}
+
+void ACpp_Player::ReiniciarMapa()
+{
+	if (SaveData->Vida <= 0)
+	{
+		SaveData = NewObject<UGame_Save>();
+		SaveGameInterface->SaveGame(true, SaveData);
+		FName MapaName = SaveData->MapaName;
+		TWeakObjectPtr<UWorld> WeakWorld = GetWorld();
+		GameInstance->OnSaveGameComplete.BindLambda([WeakWorld, MapaName]()
+		{
+			if (UWorld* World = WeakWorld.Get())
+			{
+				UGameplayStatics::OpenLevel(World, MapaName);
+			}
+		});
+	}
+	else
+	{
+		UGameplayStatics::OpenLevel(this, FName(GetWorld()->GetName()));
+	}
 }
 
 void ACpp_Player::Landed(const FHitResult& Hit)
@@ -178,7 +176,7 @@ void ACpp_Player::StartJump() { Jump(); }
 
 void ACpp_Player::StopJump() { StopJumping(); }
 
-void ACpp_Player::AddMappingContext()
+void ACpp_Player::AddMappingContext(bool AddOrRemove)
 {
 	APlayerController* PC = Cast<APlayerController>(Controller);
 	if (!PC) return;
@@ -186,11 +184,9 @@ void ACpp_Player::AddMappingContext()
 	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer());
 	if (!Subsystem) return;
 
-	if (MappingContext)
-	{
-		Subsystem->AddMappingContext(MappingContext, 0);
+	if (!MappingContext) return;
 
-	}
+	AddOrRemove ? Subsystem->AddMappingContext(MappingContext, 0) : Subsystem->RemoveMappingContext(MappingContext);
 }
 
 void ACpp_Player::CreateDynamicMaterial()

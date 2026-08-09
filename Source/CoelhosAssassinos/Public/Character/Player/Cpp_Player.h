@@ -32,13 +32,15 @@ class COELHOSASSASSINOS_API ACpp_Player : public APaperCharacter
 			UFUNCTION()
 			virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
-			void AddMappingContext();
+			void AddMappingContext(bool AddOrRemove);
 
 			void CreateDynamicMaterial();
 
 			void AddWidgetToViewport();
 
 			virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
+			void ReiniciarMapa();
 
 	#pragma endregion
 
@@ -47,12 +49,6 @@ class COELHOSASSASSINOS_API ACpp_Player : public APaperCharacter
 		public:	
 
 		protected:
-			UPROPERTY(EditAnywhere)
-			class USpringArmComponent* Comp_SpringArm;
-
-			UPROPERTY(EditAnywhere)
-			class UCameraComponent* Comp_Camera;	
-
 			UPROPERTY(EditAnywhere, Category = "Animations")
 			TObjectPtr<class UPaperZDAnimationComponent> Comp_Animation;
 
@@ -71,6 +67,9 @@ class COELHOSASSASSINOS_API ACpp_Player : public APaperCharacter
 			UPROPERTY(EditAnywhere, Category = "Stats")
 			float Dano;
 
+			UPROPERTY(EditAnywhere, Category = "Widgets")
+			TSubclassOf<class UContadorDeVida> ContadorVidaClass;
+
 			UPROPERTY()
 			class UMaterialInstanceDynamic* Mat_Inst_Dynamic;
 
@@ -80,10 +79,8 @@ class COELHOSASSASSINOS_API ACpp_Player : public APaperCharacter
 			UPROPERTY()
 			class UContadorDeVida* ContadorVida;
 
-			UPROPERTY(EditAnywhere, Category = "Widgets")
-			TSubclassOf<class UContadorDeVida> ContadorVidaClass;
-
 			struct FTimerHandle TH_TomouDano;
+			struct FTimerHandle TH_ReiniciarMapa;
 
 			class IInterface_SaveGame* SaveGameInterface;
 

@@ -4,6 +4,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/SplineComponent.h"
 #include "Components/BoxComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 AInimigoVoador::AInimigoVoador()
 {
@@ -127,11 +128,22 @@ void AInimigoVoador::OnInimigoBeginOverlap(UPrimitiveComponent* OverlappedCompon
 	{
 		if (!OtherActor->ActorHasTag("Player")) return;
 
-		Direction *= -1;
+		if (OtherActor->GetActorLocation().Z < GetActorLocation().Z + (GetCapsuleComponent()->GetScaledCapsuleHalfHeight() / 2))
+		{
+			UGameplayStatics::ApplyDamage(OtherActor, 1.f, GetController(), this, UDamageType::StaticClass());
 
-		GetRootComponent()->SetRelativeRotation(FRotator(0.f, Direction < 0 ? -90.f : 90.f, 0.f));
+			EnemyState = EEnemyState::Returning;
+		}
+		else
+		{
+			GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
 
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Player Colidiu com o Inimigo Voador");
+			GetWorldTimerManager().SetTimerForNextTick([this]()
+			{
+				GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+			});
+		}
+
 	}
 }
 

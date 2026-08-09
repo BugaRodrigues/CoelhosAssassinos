@@ -5,6 +5,7 @@
 #include "PaperZDAnimationComponent.h"
 #include "Components/BoxComponent.h"
 #include "PaperFlipbookComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
 
 AInimigoPulador::AInimigoPulador()
@@ -14,6 +15,7 @@ AInimigoPulador::AInimigoPulador()
 	Velocidade = 150.f;
 	AlturaDoPulo = 225.f;
 
+	SetRootComponent(GetCapsuleComponent());
 	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &AInimigoPulador::OnBeginOverlap);
 
 	Comp_ParedeCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("Box Collision Parede"));
@@ -46,7 +48,25 @@ void AInimigoPulador::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, A
 	{
 		if (OtherActor->ActorHasTag("Player"))
 		{
-			Target = ETargetJump::Player;
+			if (OtherActor->GetActorLocation().Z < GetActorLocation().Z + (GetCapsuleComponent()->GetScaledCapsuleHalfHeight() / 2))
+			{
+				Target = ETargetJump::Player;
+
+				UGameplayStatics::ApplyDamage(OtherActor, 1.f, GetController(), this, UDamageType::StaticClass());
+
+				GetWorldTimerManager().ClearTimer(TH_Jump);
+				GetCharacterMovement()->StopMovementImmediately();
+				Jump();
+			}
+			else
+			{
+				GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
+
+				GetWorldTimerManager().SetTimerForNextTick([this]()
+				{
+					GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+				});
+			}
 		}
 		else
 		{
@@ -68,13 +88,20 @@ void AInimigoPulador::Jump()
 	if (!VerificarSeTemChao()) SetDirectionRotation(Direction *= -1);
 
 	float Gravidade = GetCharacterMovement()->GetGravityZ() * -1;
-	float vz0 = FMath::Sqrt(2.f * Gravidade * AlturaDoPulo);
-	TempoDoPulo = (2.f * vz0) / Gravidade;
+	float Vz0 = FMath::Sqrt(2.f * Gravidade * AlturaDoPulo);
+	TempoDoPulo = (2.f * Vz0) / Gravidade;
 	DistanciaDoPulo = Velocidade * TempoDoPulo;
 
-	AInimigoPulador::LaunchCharacter(FVector(0.f, (Target == ETargetJump::Player) ? 0.f : DistanciaDoPulo * Direction, vz0), true, true);
+	if (Target == ETargetJump::Player)
+	{
+		LaunchCharacter(FVector(0.f, 0.f, Vz0), false, true);
+	}
+	else
+	{
+		LaunchCharacter(FVector(0.f, DistanciaDoPulo * Direction, Vz0), true, true);
+	}
 
-	GetWorldTimerManager().SetTimer(TH_Jump, this, &AInimigoPulador::Jump, FMath::RandRange(1.5f, 2.f));
+	GetWorldTimerManager().SetTimer(TH_Jump, this, &AInimigoPulador::Jump, FMath::RandRange(1.5f, 3.5f));
 }
 
 bool AInimigoPulador::VerificarSeTemChao()
