@@ -4,20 +4,6 @@
 #include "GameFramework/Actor.h"
 #include "Camera.generated.h"
 
-USTRUCT()
-struct FParallaxSettings
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere)
-	AActor* LayerActor;
-
-	UPROPERTY(EditAnywhere)
-	float MovementMultiplier = .5f;
-
-	FVector InitLocation;
-};
-
 UCLASS()
 class COELHOSASSASSINOS_API ACamera : public AActor
 {
@@ -33,7 +19,7 @@ class COELHOSASSASSINOS_API ACamera : public AActor
 		protected:
 			virtual void BeginPlay() override;
 
-			void UpdateParallax(FVector CameraDelta);
+			void CalculateCameraBounds(float DeltaTime);
 
 	#pragma endregion
 
@@ -41,32 +27,22 @@ class COELHOSASSASSINOS_API ACamera : public AActor
 
 		public:
 			UPROPERTY(EditAnywhere, Category = "Camera Setting")
-			AActor* TargetActor;
-
-			UPROPERTY(EditAnywhere, Category = "Camera Setting")
-			FVector2D CameraBoundsMin;
-
-			UPROPERTY(EditAnywhere, Category = "Camera Setting")
-			FVector2D CameraBoundsMax;
-
-			UPROPERTY(EditAnywhere, Category = "Camera Setting")
-			float SmoothSpeed;
-
-			UPROPERTY(EditAnywhere, Category = "Camera Setting")
-			FVector CameraOffset;
-
-			UPROPERTY(EditAnywhere, Category = "Camera Setting")
-			TArray<FParallaxSettings> ParallaxLayers;
-
-		protected:
-			UPROPERTY(EditAnywhere)
 			class UCameraComponent* Comp_Camera;
 
-			FVector LastCameraPosition;
+			UPROPERTY(EditAnywhere, Category = "Camera Setting | Follow")
+			AActor* TargetActor;
 
-			bool bHasTargetActor;
+			UPROPERTY(EditAnywhere, Category = "Camera Setting | Bounds")
+			class ATriggerBox* CameraBounds;
 
-			float GetViewportAspectRatio() const;
+			UPROPERTY(EditAnywhere, Category = "Camera Setting | Settings")
+			float SmoothSpeed;
+
+			UPROPERTY(EditAnywhere, Category = "Camera Setting | Settings")
+			float VerticalViewHeight;
+
+		protected:
+		
 
 	#pragma endregion
 

@@ -1,38 +1,31 @@
 #include "Character/Camera/Camera.h"
 #include "Camera/CameraComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Engine/TriggerBox.h"
+#include "DrawDebugHelpers.h"
 
 ACamera::ACamera()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	SmoothSpeed = 5.f;
-	CameraOffset = FVector(-500.f, 0.f, 200.f);
-	bHasTargetActor = false;
+	SmoothSpeed = 2.f;
+	VerticalViewHeight = 350.f;
 
 	Comp_Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
-	SetRootComponent(Comp_Camera);
 	Comp_Camera->SetProjectionMode(ECameraProjectionMode::Orthographic);
-	Comp_Camera->SetOrthoWidth(2048.f);
+	SetRootComponent(Comp_Camera);
 }
 
 void ACamera::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	if (!TargetActor) TargetActor = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
 
-	for (FParallaxSettings& Layer : ParallaxLayers)
+	if (!TargetActor)
 	{
-		if (Layer.LayerActor)
-		{
-			Layer.InitLocation = Layer.LayerActor->GetActorLocation();
-		}
+		TargetActor = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
 	}
 
-	LastCameraPosition = GetActorLocation();
-
-	if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
+	if (APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0))
 	{
 		PC->SetViewTarget(this);
 	}
@@ -42,65 +35,44 @@ void ACamera::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (!TargetActor) return;
-
-	FVector CurrentCameraPosition = GetActorLocation();
-	FVector TargetPosition = TargetActor->GetActorLocation();
-
-	TargetPosition.X = CurrentCameraPosition.X;
-
-	float HalfWidth = Comp_Camera->OrthoWidth * 0.5f;
-	float HalfHeight = (HalfWidth / GetViewportAspectRatio()) * 0.5f;
-
-	TargetPosition.Y = FMath::Clamp(TargetPosition.Y, CameraBoundsMin.X + HalfWidth, CameraBoundsMax.X - HalfWidth);
-	TargetPosition.Z = FMath::Clamp(TargetPosition.Z, CameraBoundsMin.Y + HalfHeight, CameraBoundsMax.Y - HalfHeight);
-
-	if (!bHasTargetActor)
-	{
-		SetActorLocation(TargetPosition);
-		LastCameraPosition = TargetPosition;
-		bHasTargetActor = true;
-		return;
-	}
-
-	FVector NewCameraPosition = FMath::VInterpTo(CurrentCameraPosition, TargetPosition, DeltaTime, SmoothSpeed);
-	SetActorLocation(NewCameraPosition);
-
-	UpdateParallax(NewCameraPosition - LastCameraPosition);
-	LastCameraPosition = NewCameraPosition;
+	CalculateCameraBounds(DeltaTime);
 }
 
-void ACamera::UpdateParallax(FVector CameraDelta)
+void ACamera::CalculateCameraBounds(float DeltaTime)
 {
-	if (CameraDelta.IsNearlyZero()) return;
+	if (!TargetActor || !GEngine->GameViewport || !CameraBounds) return;
 
-	for (FParallaxSettings& Layer : ParallaxLayers)
-	{
-		if (Layer.LayerActor)
-		{
-			FVector LayerCurrentLocation = Layer.LayerActor->GetActorLocation();
-			float ParallaxEffect = 1.f - Layer.MovementMultiplier;
+	FVector2D ViewportSize;
+	GEngine->GameViewport->GetViewportSize(ViewportSize);
 
-			FVector ParallaxMovement = LayerCurrentLocation + (CameraDelta * ParallaxEffect);
-			ParallaxMovement.X = Layer.InitLocation.X;
+	if (ViewportSize.X <= 0 || ViewportSize.Y <= 0) return;
 
-			Layer.LayerActor->SetActorLocation(ParallaxMovement);
-		}
-	}
-}
+	float AspectRatio = (ViewportSize.Y > 0) ? (ViewportSize.X / ViewportSize.Y) : 1.77f;
+	Comp_Camera->OrthoWidth = VerticalViewHeight * AspectRatio;
 
-float ACamera::GetViewportAspectRatio() const
-{
-	if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
-	{
-		int32 ViewportX, ViewportY;
+	float HalfWidth = Comp_Camera->OrthoWidth * .5f;
+	float HalfHeight = VerticalViewHeight * .5f;
 
-		PC->GetViewportSize(ViewportX, ViewportY);
+	FVector BoundsOrigin;
+	FVector BoundsExtent;
+	CameraBounds->GetActorBounds(false, BoundsOrigin, BoundsExtent);
 
-		if (ViewportY != 0)
-		{
-			return static_cast<float>(ViewportX) / static_cast<float>(ViewportY);
-		}
-	}
-	return 1.777778f;
+	float MinY = (BoundsOrigin.Y - BoundsExtent.Y) + HalfWidth;
+	float MaxY = (BoundsOrigin.Y + BoundsExtent.Y) - HalfWidth;
+	float MinZ = (BoundsOrigin.Z - BoundsExtent.Z) + HalfHeight;
+	float MaxZ = (BoundsOrigin.Z + BoundsExtent.Z) - HalfHeight;
+
+	FVector TargetLocation = TargetActor->GetActorLocation();
+
+	float ClampedY = FMath::Clamp(TargetLocation.Y, MinY, MaxY);
+	float ClampedZ = FMath::Clamp(TargetLocation.Z, MinZ, MaxZ);
+
+	if (MaxY < MinY) ClampedY = BoundsOrigin.Y;
+	if (MaxZ < MinZ) ClampedZ = BoundsOrigin.Z;
+
+	FVector CurrentLocation = GetActorLocation();
+	float SmoothY = FMath::FInterpTo(CurrentLocation.Y, ClampedY, DeltaTime, SmoothSpeed);
+	float SmoothZ = FMath::FInterpTo(CurrentLocation.Z, ClampedZ, DeltaTime, SmoothSpeed);
+
+	SetActorLocation(FVector(CurrentLocation.X, SmoothY, SmoothZ));
 }
