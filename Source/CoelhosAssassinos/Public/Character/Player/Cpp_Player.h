@@ -71,20 +71,20 @@ class COELHOSASSASSINOS_API ACpp_Player : public APaperCharacter
 			TSubclassOf<class UContadorDeVida> ContadorVidaClass;
 
 			UPROPERTY()
-			class UMaterialInstanceDynamic* Mat_Inst_Dynamic;
+			TObjectPtr<class UMaterialInstanceDynamic> Mat_Inst_Dynamic;
 
 			UPROPERTY()
-			class UGame_Save* SaveData;
+			TObjectPtr<class UGame_Save> SaveData;
 
 			UPROPERTY()
-			class UContadorDeVida* ContadorVida;
+			TObjectPtr<class UContadorDeVida> ContadorVida;
 
 			struct FTimerHandle TH_TomouDano;
 			struct FTimerHandle TH_ReiniciarMapa;
 
-			class IInterface_SaveGame* SaveGameInterface;
+			TObjectPtr<class IInterface_SaveGame> SaveGameInterface;
 
-			class UMain_Game_Instance* GameInstance;
+			TObjectPtr<class UMain_Game_Instance> GameInstance;
 
 	#pragma endregion
 	

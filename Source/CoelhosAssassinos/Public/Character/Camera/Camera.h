@@ -21,25 +21,30 @@ class COELHOSASSASSINOS_API ACamera : public AActor
 
 			void CalculateCameraBounds(float DeltaTime);
 
+			//float UpdateCameraResolution();
+
 	#pragma endregion
 
 	#pragma region Variables
 
 		public:
 			UPROPERTY(EditAnywhere, Category = "Camera Setting")
-			class UCameraComponent* Comp_Camera;
+			TObjectPtr<class UCameraComponent> Comp_Camera;
 
 			UPROPERTY(EditAnywhere, Category = "Camera Setting | Follow")
-			AActor* TargetActor;
+			TObjectPtr<AActor> TargetActor;
 
 			UPROPERTY(EditAnywhere, Category = "Camera Setting | Bounds")
-			class ATriggerBox* CameraBounds;
+			TObjectPtr<AActor> MapaBounds;
 
 			UPROPERTY(EditAnywhere, Category = "Camera Setting | Settings")
 			float SmoothSpeed;
 
 			UPROPERTY(EditAnywhere, Category = "Camera Setting | Settings")
-			float VerticalViewHeight;
+			float TargetAspectRatio;
+
+			UPROPERTY(EditAnywhere, Category = "Camera Setting | Settings")
+			float DefaultOrthoWidth;
 
 		protected:
 		

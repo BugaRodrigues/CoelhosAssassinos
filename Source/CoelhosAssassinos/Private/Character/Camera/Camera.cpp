@@ -1,18 +1,23 @@
 #include "Character/Camera/Camera.h"
 #include "Camera/CameraComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "PaperTileMapComponent.h"
 #include "Engine/TriggerBox.h"
-#include "DrawDebugHelpers.h"
+#include "PaperTileMap.h"
 
 ACamera::ACamera()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
 	SmoothSpeed = 2.f;
-	VerticalViewHeight = 350.f;
+	DefaultOrthoWidth = 1920.f;
+	TargetAspectRatio = 1.777f;
 
 	Comp_Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Comp_Camera->SetProjectionMode(ECameraProjectionMode::Orthographic);
+	Comp_Camera->OrthoWidth = DefaultOrthoWidth;
+	Comp_Camera->AspectRatio = TargetAspectRatio;
+	Comp_Camera->bConstrainAspectRatio = true;
 	SetRootComponent(Comp_Camera);
 }
 
@@ -40,39 +45,39 @@ void ACamera::Tick(float DeltaTime)
 
 void ACamera::CalculateCameraBounds(float DeltaTime)
 {
-	if (!TargetActor || !GEngine->GameViewport || !CameraBounds) return;
-
-	FVector2D ViewportSize;
-	GEngine->GameViewport->GetViewportSize(ViewportSize);
-
-	if (ViewportSize.X <= 0 || ViewportSize.Y <= 0) return;
-
-	float AspectRatio = (ViewportSize.Y > 0) ? (ViewportSize.X / ViewportSize.Y) : 1.77f;
-	Comp_Camera->OrthoWidth = VerticalViewHeight * AspectRatio;
+	if (!TargetActor || !MapaBounds) return;
 
 	float HalfWidth = Comp_Camera->OrthoWidth * .5f;
-	float HalfHeight = VerticalViewHeight * .5f;
+	float HalfHeight = (Comp_Camera->OrthoWidth / Comp_Camera->AspectRatio) * .5f;
 
-	FVector BoundsOrigin;
-	FVector BoundsExtent;
-	CameraBounds->GetActorBounds(false, BoundsOrigin, BoundsExtent);
+	FVector MapOrigin, MapExtent;
+	MapaBounds->GetActorBounds(false, MapOrigin, MapExtent);
 
-	float MinY = (BoundsOrigin.Y - BoundsExtent.Y) + HalfWidth;
-	float MaxY = (BoundsOrigin.Y + BoundsExtent.Y) - HalfWidth;
-	float MinZ = (BoundsOrigin.Z - BoundsExtent.Z) + HalfHeight;
-	float MaxZ = (BoundsOrigin.Z + BoundsExtent.Z) - HalfHeight;
+	FVector MapMin = MapOrigin - MapExtent;
+	FVector MapMax = MapOrigin + MapExtent;
 
-	FVector TargetLocation = TargetActor->GetActorLocation();
+	FVector PlayerLocation = TargetActor->GetActorLocation();
+	FVector DesiredLocation = PlayerLocation;
 
-	float ClampedY = FMath::Clamp(TargetLocation.Y, MinY, MaxY);
-	float ClampedZ = FMath::Clamp(TargetLocation.Z, MinZ, MaxZ);
+	if (HalfWidth * 2.f > MapExtent.Y * 2.f)
+	{
+		DesiredLocation.Y = MapOrigin.Y;
+	}
+	else
+	{
+		DesiredLocation.Y = FMath::Clamp(DesiredLocation.Y, MapMin.Y + HalfWidth, MapMax.Y - HalfWidth);
+	}
 
-	if (MaxY < MinY) ClampedY = BoundsOrigin.Y;
-	if (MaxZ < MinZ) ClampedZ = BoundsOrigin.Z;
+	if (HalfHeight * 2.f > MapExtent.Z * 2.f)
+	{
+		DesiredLocation.Z = MapOrigin.Z;
+	}
+	else
+	{
+		DesiredLocation.Z = FMath::Clamp(DesiredLocation.Z, MapMin.Z + HalfHeight, MapMax.Z - HalfHeight);
+	}
 
-	FVector CurrentLocation = GetActorLocation();
-	float SmoothY = FMath::FInterpTo(CurrentLocation.Y, ClampedY, DeltaTime, SmoothSpeed);
-	float SmoothZ = FMath::FInterpTo(CurrentLocation.Z, ClampedZ, DeltaTime, SmoothSpeed);
+	DesiredLocation.X = GetActorLocation().X;
 
-	SetActorLocation(FVector(CurrentLocation.X, SmoothY, SmoothZ));
+	SetActorLocation(FMath::VInterpTo(GetActorLocation(), DesiredLocation, DeltaTime, SmoothSpeed));
 }

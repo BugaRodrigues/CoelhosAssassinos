@@ -6,6 +6,7 @@ UParallaxComponent::UParallaxComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 
 	ParallaxFactor = FVector2D(0.2f, 0.1f);
+	ParallaxSpeed = 10.0f;
 }
 
 void UParallaxComponent::BeginPlay()
@@ -26,14 +27,9 @@ void UParallaxComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 	
 	if (!Camera) return;
 
-	FVector CurrentCameraPosition = Camera->GetActorLocation();
-	FVector CameraDelta = CurrentCameraPosition - LastCameraPosition;
-
 	FVector NewLocation = GetOwner()->GetActorLocation();
-	NewLocation.Y += CameraDelta.Y * ParallaxFactor.X;
-	NewLocation.Z += CameraDelta.Z * ParallaxFactor.Y;
+	NewLocation.Y += (DeltaTime * ParallaxFactor.X) * ParallaxSpeed;
 
 	GetOwner()->SetActorLocation(NewLocation);
-	LastCameraPosition = CurrentCameraPosition;
 }
 

@@ -12,12 +12,11 @@ class COELHOSASSASSINOS_API UContadorDeChaves : public UUserWidget
 	#pragma region Functions
 
 		public:	
-
-		protected:
 			virtual void NativeConstruct() override;
 
 			virtual void NativeDestruct() override;
 
+		protected:
 			UFUNCTION()
 			void UpdateContador(int32 TotalChaves, int32 ChavesColetadas);
 

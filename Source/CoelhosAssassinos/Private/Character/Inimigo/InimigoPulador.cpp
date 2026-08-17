@@ -121,7 +121,31 @@ bool AInimigoPulador::VerificarSeTemChao()
 void AInimigoPulador::SetDirectionRotation(int32 NewDirection)
 {
 	Direction = NewDirection;
-	float YawRotation = (Direction < 0) ? -90.f : 90.f;
 
-	GetRootComponent()->SetRelativeRotation(FRotator(0.f, YawRotation, 0.f));
+	float YawRotation = (Direction > 0) ? -90.f : 90.f;
+	FRotator NewRotation = FRotator(0.f, YawRotation, 0.f);
+
+	USceneComponent* Root = GetRootComponent();
+
+	if (!Root)
+	{
+		UE_LOG(LogTemp, Error, TEXT("SetDirectionRotation: RootComponent is null on %s!"), *GetName());
+		return;
+	}
+
+	if (!Root->IsRegistered()) return;
+
+	if (!Root->GetRelativeRotation().Equals(NewRotation, .01f))
+	{
+		Root->SetRelativeRotation(NewRotation, false, nullptr, ETeleportType::TeleportPhysics);
+	}
+}
+
+void AInimigoPulador::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+
+	GetWorldTimerManager().ClearAllTimersForObject(this);
+	GetCapsuleComponent()->OnComponentBeginOverlap.RemoveAll(this);
+	Comp_ParedeCollision->OnComponentBeginOverlap.RemoveAll(this);
 }

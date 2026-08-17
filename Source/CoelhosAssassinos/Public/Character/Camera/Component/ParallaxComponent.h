@@ -25,6 +25,9 @@ class COELHOSASSASSINOS_API UParallaxComponent : public UActorComponent
 			UPROPERTY(EditAnywhere, Category="Parallax")
 			FVector2D ParallaxFactor;
 
+			UPROPERTY(EditAnywhere, Category = "Parallax")
+			float ParallaxSpeed;
+
 		protected:
 			AActor* Camera;
 
