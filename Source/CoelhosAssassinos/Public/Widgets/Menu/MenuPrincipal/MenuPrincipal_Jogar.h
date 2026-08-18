@@ -30,6 +30,8 @@ class COELHOSASSASSINOS_API UMenuPrincipal_Jogar : public UUserWidget
 			UFUNCTION()
 			void OnSaveGameComplete();
 
+			void PlaySound(USoundBase* Sound);
+
 	#pragma endregion
 
 	#pragma region Variaveis
@@ -38,20 +40,23 @@ class COELHOSASSASSINOS_API UMenuPrincipal_Jogar : public UUserWidget
 
 		protected:
 			UPROPERTY(meta = (BindWidget))
-			class UButton* BTN_NewGame;
+			TObjectPtr<class UButton> BTN_NewGame;
 
 			UPROPERTY(meta = (BindWidget))
-			class UButton* BTN_Continuar;
+			TObjectPtr<class UButton> BTN_Continuar;
 
 			UPROPERTY(meta = (BindWidget))
-			class UButton* BTN_Voltar;
+			TObjectPtr<class UButton> BTN_Voltar;
+
+			UPROPERTY(EditAnywhere, Category = "Sound")
+			TObjectPtr<USoundBase> SB_Click;
 
 			UPROPERTY()
-			class UGame_Save* SaveData;
+			TObjectPtr<class UGame_Save> SaveData;
 
-			class IInterface_SaveGame* GameSave_Interface;
+			TObjectPtr<class IInterface_SaveGame> GameSave_Interface;
 
-			class UMain_Game_Instance* GameInstance;
+			TObjectPtr<class UMain_Game_Instance> GameInstance;
 
 	#pragma endregion
 };

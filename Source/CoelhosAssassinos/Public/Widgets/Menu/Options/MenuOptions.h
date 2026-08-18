@@ -30,6 +30,8 @@ class COELHOSASSASSINOS_API UMenuOptions : public UUserWidget
 			UFUNCTION()
 			void OnClicked_BTN_Voltar();
 
+			void PlaySound(USoundBase* Sound);
+
 	#pragma endregion
 
 	#pragma region Variaveis
@@ -38,19 +40,22 @@ class COELHOSASSASSINOS_API UMenuOptions : public UUserWidget
 
 		protected:
 			UPROPERTY(meta = (BindWidget))
-			class UButton* BTN_Video;
+			TObjectPtr<class UButton> BTN_Video;
 
 			UPROPERTY(meta = (BindWidget))
-			class UButton* BTN_Audio;
+			TObjectPtr<class UButton> BTN_Audio;
 
 			UPROPERTY(meta = (BindWidget))
-			class UButton* BTN_Controls;
+			TObjectPtr<class UButton> BTN_Controls;
 
 			UPROPERTY(meta = (BindWidget))
-			class UButton* BTN_Voltar;
+			TObjectPtr<class UButton> BTN_Voltar;
 
 			UPROPERTY(meta = (BindWidget))
-			class UWidgetSwitcher* WS_MenuOptions;
+			TObjectPtr<class UWidgetSwitcher> WS_MenuOptions;
+
+			UPROPERTY(EditAnywhere, Category = "Sound")
+			TObjectPtr<USoundBase> SB_Click;
 
 	#pragma endregion
 };

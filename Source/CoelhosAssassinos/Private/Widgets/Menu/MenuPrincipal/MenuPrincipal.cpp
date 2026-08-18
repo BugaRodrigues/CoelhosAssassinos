@@ -46,15 +46,28 @@ void UMenuPrincipal::NativeDestruct()
 
 void UMenuPrincipal::OnClicked_BTN_Jogar()
 {
+	PlaySound(SB_Click);
+
 	WS_Menu->SetActiveWidgetIndex(1);
 }
 
 void UMenuPrincipal::OnClicked_BTN_Opcoes()
 {
+	PlaySound(SB_Click);
+
 	WS_Menu->SetActiveWidgetIndex(2);
 }
 
 void UMenuPrincipal::OnClicked_BTN_Sair()
 {
+	PlaySound(SB_Click);
+
 	UKismetSystemLibrary::QuitGame(GetWorld(), nullptr, EQuitPreference::Quit, false);
+}
+
+void UMenuPrincipal::PlaySound(USoundBase* Sound)
+{
+	if (!Sound) return;
+
+	UGameplayStatics::PlaySound2D(GetWorld(), Sound);
 }

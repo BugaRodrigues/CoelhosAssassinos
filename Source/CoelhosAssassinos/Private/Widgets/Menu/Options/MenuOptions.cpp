@@ -1,5 +1,6 @@
 #include "Widgets/Menu/Options/MenuOptions.h"
 #include "Components/WidgetSwitcher.h"
+#include "Kismet\GameplayStatics.h"
 #include "Components/Button.h"
 
 void UMenuOptions::NativeConstruct()
@@ -26,6 +27,8 @@ void UMenuOptions::NativeDestruct()
 
 void UMenuOptions::OnClicked_BTN_Video()
 {
+	PlaySound(SB_Click);
+
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Video"));
 
 	WS_MenuOptions->SetActiveWidgetIndex(0);
@@ -33,6 +36,8 @@ void UMenuOptions::OnClicked_BTN_Video()
 
 void UMenuOptions::OnClicked_BTN_Audio()
 {
+	PlaySound(SB_Click);
+
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Audio"));
 
 	WS_MenuOptions->SetActiveWidgetIndex(1);
@@ -40,6 +45,8 @@ void UMenuOptions::OnClicked_BTN_Audio()
 
 void UMenuOptions::OnClicked_BTN_Controls()
 {
+	PlaySound(SB_Click);
+
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Controls"));
 
 	WS_MenuOptions->SetActiveWidgetIndex(2);
@@ -47,8 +54,17 @@ void UMenuOptions::OnClicked_BTN_Controls()
 
 void UMenuOptions::OnClicked_BTN_Voltar()
 {
+	PlaySound(SB_Click);
+
 	if (UWidgetSwitcher* WS_MenuPrincipal = Cast<UWidgetSwitcher>(GetParent()))
 	{
 		WS_MenuPrincipal->SetActiveWidgetIndex(0);
 	}
+}
+
+void UMenuOptions::PlaySound(USoundBase* Sound)
+{
+	if (!Sound) return;
+
+	UGameplayStatics::PlaySound2D(GetWorld(), Sound);
 }

@@ -48,6 +48,7 @@ void ACoelhoZumbi::BeginPlay()
 
 	#pragma endregion
 
+	UGameplayStatics::PlaySound2D(GetWorld(), SB_Run);
 }
 
 void ACoelhoZumbi::Tick(float DeltaTime)
@@ -108,6 +109,8 @@ void ACoelhoZumbi::OnInimigoBeginOverlap(UPrimitiveComponent* OverlappedComp, AA
 
 float ACoelhoZumbi::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
+	UGameplayStatics::PlaySound2D(GetWorld(), SB_Dano);
+
 	Vida -= DamageAmount;
 
 	bCanMove = false;
@@ -156,4 +159,11 @@ float ACoelhoZumbi::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 	});
 
 	return DamageAmount;
+}
+
+void ACoelhoZumbi::Morreu()
+{
+	UGameplayStatics::PlaySound2D(GetWorld(), SB_Die);
+
+	Destroy();
 }

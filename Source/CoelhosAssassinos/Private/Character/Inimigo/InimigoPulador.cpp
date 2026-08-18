@@ -46,6 +46,8 @@ void AInimigoPulador::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, A
 {
 	if (OtherActor && OtherActor != this)
 	{
+		UGameplayStatics::PlaySound2D(GetWorld(), SB_Land);
+
 		if (OtherActor->ActorHasTag("Player"))
 		{
 			if (OtherActor->GetActorLocation().Z < GetActorLocation().Z + (GetCapsuleComponent()->GetScaledCapsuleHalfHeight() / 2))
@@ -62,7 +64,7 @@ void AInimigoPulador::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, A
 			{
 				GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
 
-				GetWorldTimerManager().SetTimerForNextTick([this]()
+				GetWorldTimerManager().SetTimerForNextTick([this] 
 				{
 					GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 				});
@@ -86,6 +88,8 @@ void AInimigoPulador::OnParedeBeginOverlap(UPrimitiveComponent* OverlappedCompon
 void AInimigoPulador::Jump()
 { 
 	if (!VerificarSeTemChao()) SetDirectionRotation(Direction *= -1);
+
+	UGameplayStatics::PlaySound2D(GetWorld(), SB_Jump);
 
 	float Gravidade = GetCharacterMovement()->GetGravityZ() * -1;
 	float Vz0 = FMath::Sqrt(2.f * Gravidade * AlturaDoPulo);

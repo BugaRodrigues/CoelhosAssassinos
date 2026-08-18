@@ -27,16 +27,20 @@ void APorta::BeginPlay()
 {
 	Super::BeginPlay();
 
-	GameInstance = Cast<UMain_Game_Instance>(GetGameInstance());
+	PlaySound(SB_BaseFechado);
 
-	if (IsValid(GameInstance))
-	{
-		SaveGameInterface = Cast<IInterface_SaveGame>(GameInstance);
-	}
+	#pragma region Get Save Game
+		GameInstance = Cast<UMain_Game_Instance>(GetGameInstance());
 
-	if (!SaveGameInterface) { UE_LOG(LogTemp, Error, TEXT("SaveGameInterface or GameInstance is null. (Porta Init)")); return; }
+		if (IsValid(GameInstance))
+		{
+			SaveGameInterface = Cast<IInterface_SaveGame>(GameInstance);
+		}
 
-	SaveData = SaveGameInterface->GetSaveData();
+		if (!SaveGameInterface) { UE_LOG(LogTemp, Error, TEXT("SaveGameInterface or GameInstance is null. (Porta Init)")); return; }
+
+		SaveData = SaveGameInterface->GetSaveData();
+	#pragma endregion
 
 	Comp_Sprite->SetSprite(Sprite_Closed ? Sprite_Closed : nullptr);
 
@@ -52,6 +56,8 @@ void APorta::BeginPlay()
 
 void APorta::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	PlaySound(SB_Entrar);
+
 	if (!SaveGameInterface) UE_LOG(LogTemp, Error, TEXT("SaveGameInterface is null"));
 
 	if (!bIsOpen) return;
@@ -72,11 +78,23 @@ void APorta::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherAc
 		});
 	}
 }
+
 void APorta::OpenDoor()
 {
+	PlaySound(SB_Abriu);
+
 	bIsOpen = true;
 
 	Comp_Sprite->SetSprite(Sprite_Open ? Sprite_Open : nullptr);
+
+	GetWorldTimerManager().SetTimerForNextTick([this] () { PlaySound(SB_BaseAberto); });
+}
+
+void APorta::PlaySound(USoundBase* Sound)
+{
+	if (!Sound) return;
+
+	UGameplayStatics::PlaySound2D(GetWorld(), Sound);
 }
 
 void APorta::EndPlay(const EEndPlayReason::Type EndPlayReason)

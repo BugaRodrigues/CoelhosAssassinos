@@ -36,11 +36,15 @@ class COELHOSASSASSINOS_API ACpp_Player : public APaperCharacter
 
 			void CreateDynamicMaterial();
 
-			void AddWidgetToViewport();
+			void AddOrRemoveWidgetToViewport(bool bAdd);
 
 			virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 			void ReiniciarMapa();
+
+			void AddMenuPauseToViewport();
+
+			void PlaySound(USoundBase* Sound);
 
 	#pragma endregion
 
@@ -70,6 +74,30 @@ class COELHOSASSASSINOS_API ACpp_Player : public APaperCharacter
 			UPROPERTY(EditAnywhere, Category = "Widgets")
 			TSubclassOf<class UContadorDeVida> ContadorVidaClass;
 
+			UPROPERTY(EditAnywhere, Category = "Widgets")
+			TSubclassOf<class UMenuPause> MenuPauseClass;
+
+			UPROPERTY(EditAnywhere, Category = "Sound")
+			TObjectPtr<USoundBase> SB_Run;
+
+			UPROPERTY(EditAnywhere, Category = "Sound")
+			TObjectPtr<USoundBase> SB_Jump;
+
+			UPROPERTY(EditAnywhere, Category = "Sound")
+			TObjectPtr<USoundBase> SB_Land;
+
+			UPROPERTY(EditAnywhere, Category = "Sound")
+			TObjectPtr<USoundBase> SB_LandOnEnemy;
+
+			UPROPERTY(EditAnywhere, Category = "Sound")
+			TObjectPtr<USoundBase> SB_Lose;
+
+			UPROPERTY(EditAnywhere, Category = "Sound")
+			TObjectPtr<USoundBase> SB_LoseAll;
+
+			UPROPERTY(EditAnywhere, Category = "Sound")
+			TObjectPtr<USoundBase> SB_Restart;
+
 			UPROPERTY()
 			TObjectPtr<class UMaterialInstanceDynamic> Mat_Inst_Dynamic;
 
@@ -78,6 +106,9 @@ class COELHOSASSASSINOS_API ACpp_Player : public APaperCharacter
 
 			UPROPERTY()
 			TObjectPtr<class UContadorDeVida> ContadorVida;
+
+			UPROPERTY()
+			TObjectPtr<class UMenuPause> MenuPause;
 
 			struct FTimerHandle TH_TomouDano;
 			struct FTimerHandle TH_ReiniciarMapa;

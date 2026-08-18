@@ -27,6 +27,8 @@ class COELHOSASSASSINOS_API UMenuPrincipal : public UUserWidget
 			UFUNCTION()
 			void OnClicked_BTN_Sair();
 
+			void PlaySound(USoundBase* Sound);
+
 	#pragma endregion
 
 	#pragma region Variables
@@ -35,16 +37,19 @@ class COELHOSASSASSINOS_API UMenuPrincipal : public UUserWidget
 	
 		protected:
 			UPROPERTY(meta = (BindWidget))
-			class UButton* BTN_Jogar;
+			TObjectPtr<class UButton> BTN_Jogar;
 
 			UPROPERTY(meta = (BindWidget))
-			class UButton* BTN_Opcoes;
+			TObjectPtr<class UButton> BTN_Opcoes;
 
 			UPROPERTY(meta = (BindWidget))
-			class UButton* BTN_Sair;
+			TObjectPtr<class UButton> BTN_Sair;
 
 			UPROPERTY(meta = (BindWidget))
-			class UWidgetSwitcher* WS_Menu;
+			TObjectPtr<class UWidgetSwitcher> WS_Menu;
+
+			UPROPERTY(EditAnywhere, Category = "Sound")
+			TObjectPtr<USoundBase> SB_Click;
 
 	#pragma endregion
 

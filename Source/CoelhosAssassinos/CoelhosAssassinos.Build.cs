@@ -17,7 +17,9 @@ public class CoelhosAssassinos : ModuleRules
 			"EnhancedInput", 
 			"Paper2D",
 			"PaperZD",
-            "UMG" 
+            "UMG",
+			"AudioMixer",
+			"MetasoundEngine"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] 

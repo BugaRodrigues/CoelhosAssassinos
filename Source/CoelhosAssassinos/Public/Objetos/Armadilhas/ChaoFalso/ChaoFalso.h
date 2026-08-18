@@ -29,6 +29,8 @@ class COELHOSASSASSINOS_API AChaoFalso : public AActor
 
 			void Construct();
 
+			void TocarSom(USoundBase* Sound);
+
 	#pragma endregion
 
 	#pragma region Variaveis
@@ -37,19 +39,28 @@ class COELHOSASSASSINOS_API AChaoFalso : public AActor
 
 		protected:
 			UPROPERTY(EditAnywhere)
-			class UBoxComponent* Comp_BoxCollision;
+			TObjectPtr<class UBoxComponent> Comp_BoxCollision;
 
 			UPROPERTY(EditAnywhere)
-			class UPaperSpriteComponent* Comp_PaperSprite;
+			TObjectPtr<class UPaperSpriteComponent>Comp_PaperSprite;
 
 			UPROPERTY(EditAnywhere, category = "Sprites")
-			class UPaperSprite* Sprite_Ativo;
+			TObjectPtr<class UPaperSprite>Sprite_Ativo;
 
 			UPROPERTY(EditAnywhere, category = "Sprites")
-			class UPaperSprite* Sprite_Completo;
+			TObjectPtr<class UPaperSprite>Sprite_Completo;
 
 			UPROPERTY(EditAnywhere, category = "Sprites")
-			class UPaperSprite* Sprite_Inativo;
+			TObjectPtr<class UPaperSprite> Sprite_Inativo;
+
+			UPROPERTY(EditAnywhere, Category = "Sound")
+			TObjectPtr<USoundBase> SB_ChaoFechar;
+
+			UPROPERTY(EditAnywhere, Category = "Sound")
+			TObjectPtr<USoundBase> SB_ChaoQuebrar;
+
+			UPROPERTY(EditAnywhere, Category = "Sound")
+			TObjectPtr<USoundBase> SB_ChaoRegenerar;
 
 			struct FTimerHandle TH_Destruct;
 

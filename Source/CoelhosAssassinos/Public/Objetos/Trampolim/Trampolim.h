@@ -17,13 +17,12 @@ class COELHOSASSASSINOS_API ATrampolim : public AActor
 			//virtual void Tick(float DeltaTime) override;
 
 		private:
-			virtual void BeginPlay() override;
+			//virtual void BeginPlay() override;
 
 			UFUNCTION()
 			void OnJumpAreaOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
-			UFUNCTION()
-			void OnEndAnimation();
+			void PlaySound();
 
 	#pragma endregion
 
@@ -43,6 +42,9 @@ class COELHOSASSASSINOS_API ATrampolim : public AActor
 
 			UPROPERTY(EditAnywhere, Category = "Lauch")
 			float LaunchForce;
+
+			UPROPERTY(EditAnywhere, Category = "Sound")
+			TObjectPtr<USoundBase> SB_Jumping;
 
 	#pragma endregion
 

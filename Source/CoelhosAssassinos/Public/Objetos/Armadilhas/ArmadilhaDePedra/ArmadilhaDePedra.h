@@ -40,6 +40,8 @@ class COELHOSASSASSINOS_API AArmadilhaDePedra : public AActor
 
 			void StartReturning();
 
+			void TocarSom(USoundBase* Sound);
+
 	#pragma endregion
 
 	#pragma region Variables
@@ -48,16 +50,16 @@ class COELHOSASSASSINOS_API AArmadilhaDePedra : public AActor
 
 		protected:
 			UPROPERTY(EditAnywhere)
-			class USceneComponent* Comp_Scene;
+			TObjectPtr<class USceneComponent> Comp_Scene;
 
 			UPROPERTY(EditAnywhere)
-			class UBoxComponent* Comp_BoxCollision;
+			TObjectPtr<class UBoxComponent> Comp_BoxCollision;
 
 			UPROPERTY(EditAnywhere)
-			class UPaperSpriteComponent* Comp_PaperSprite;
+			TObjectPtr<class UPaperSpriteComponent> Comp_PaperSprite;
 
 			UPROPERTY(EditAnywhere)
-			class UBoxComponent* Comp_BoxProximadade;
+			TObjectPtr<class UBoxComponent> Comp_BoxProximadade;
 
 			UPROPERTY(EditAnywhere, Category = "Falling")
 			float FallingSpeed;
@@ -70,6 +72,15 @@ class COELHOSASSASSINOS_API AArmadilhaDePedra : public AActor
 
 			UPROPERTY(EditAnywhere, Category = "Stats")
 			float Damage;
+
+			UPROPERTY(EditAnywhere, Category = "Sound")
+			TObjectPtr<USoundBase> SB_Caiu;
+
+			UPROPERTY(EditAnywhere, Category = "Sound")
+			TObjectPtr<USoundBase> SB_Caindo;
+
+			UPROPERTY(EditAnywhere, Category = "Sound")
+			TObjectPtr<USoundBase> SB_Voltando;
 
 			FVector StartLocation;
 			FVector Comp_StatrLocation;

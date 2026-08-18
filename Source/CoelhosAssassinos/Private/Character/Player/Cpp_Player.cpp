@@ -4,6 +4,7 @@
 #include "GameInstance/Main_Game_Instance.h"
 #include "Widgets/Contador/ContadorDeVida.h"
 #include "GameFramework/PlayerController.h"
+#include "Widgets/Menu/Pause/MenuPause.h"
 #include "Components/CapsuleComponent.h"
 #include "PaperZDAnimationComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -55,7 +56,7 @@ void ACpp_Player::BeginPlay()
 		}
 	#pragma endregion
 
-	AddWidgetToViewport();
+	AddOrRemoveWidgetToViewport(true);
 	AddMappingContext(true);
 	CreateDynamicMaterial();
 }
@@ -90,6 +91,8 @@ float ACpp_Player::TakeDamage(float DamageAmount, FDamageEvent const& DamageEven
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
 	if (!SaveGameInterface) { UE_LOG(LogTemp, Error, TEXT("SaveGameInterface is null")); return 0.f; }
+
+	PlaySound(SB_Lose);
 
 	Vida--;
 
@@ -131,20 +134,34 @@ void ACpp_Player::ReiniciarMapa()
 {
 	if (SaveData->Vida <= 0)
 	{
+		PlaySound(SB_LoseAll);
+
+		AddOrRemoveWidgetToViewport(false);
+
 		SaveData = NewObject<UGame_Save>();
-		SaveGameInterface->SaveGame(true, SaveData);
-		FName MapaName = SaveData->MapaName;
-		TWeakObjectPtr<UWorld> WeakWorld = GetWorld();
-		GameInstance->OnSaveGameComplete.BindLambda([WeakWorld, MapaName]()
+		if (GameInstance)
 		{
-			if (UWorld* World = WeakWorld.Get())
+			SaveGameInterface->SaveGame(true, SaveData);
+
+			TWeakObjectPtr<ACpp_Player> WeakThis(this);
+			GameInstance->OnSaveGameComplete.BindLambda([WeakThis]
 			{
-				UGameplayStatics::OpenLevel(World, MapaName);
-			}
-		});
+				if (!WeakThis.IsValid()) return;
+
+				WeakThis->AddMenuPauseToViewport();
+			});
+		}
+		else
+		{
+			SaveGameInterface->SaveGame(false, SaveData);
+
+			AddMenuPauseToViewport();
+		}
 	}
 	else
 	{
+		PlaySound(SB_Restart);
+
 		UGameplayStatics::OpenLevel(this, FName(GetWorld()->GetName()));
 	}
 }
@@ -155,7 +172,9 @@ void ACpp_Player::Landed(const FHitResult& Hit)
 
 	if (Hit.GetActor())
 	{
-		if (!Hit.GetActor()->ActorHasTag("Inimigo")) return;
+		if (!Hit.GetActor()->ActorHasTag("Inimigo")) { PlaySound(SB_Land); return; }
+
+		PlaySound(SB_LandOnEnemy);
 
 		LaunchCharacter(FVector(0.f, 0.f, 750.f), false, true);
 
@@ -165,6 +184,8 @@ void ACpp_Player::Landed(const FHitResult& Hit)
 
 void ACpp_Player::Move(const FInputActionValue& Value)
 {
+	PlaySound(SB_Run);
+
 	float MoveForce = Value.Get<float>();
 
 	AddMovementInput(FVector(0.f, 1.f, 0.f), MoveForce);
@@ -172,7 +193,7 @@ void ACpp_Player::Move(const FInputActionValue& Value)
 	GetSprite()->SetRelativeRotation(FRotator(0.f, MoveForce > 0.f ? 0.f : 180.f, 0.f));
 }
 
-void ACpp_Player::StartJump() { Jump(); }
+void ACpp_Player::StartJump() { Jump(); PlaySound(SB_Jump); }
 
 void ACpp_Player::StopJump() { StopJumping(); }
 
@@ -200,16 +221,41 @@ void ACpp_Player::CreateDynamicMaterial()
 	Mat_Inst_Dynamic = GetSprite()->CreateDynamicMaterialInstance(0, BaseMaterial);
 }
 
-void ACpp_Player::AddWidgetToViewport()
+void ACpp_Player::AddOrRemoveWidgetToViewport(bool bAdd)
 {
-	if (!ContadorVidaClass) return;
+	if (bAdd)
+	{
+		if (!ContadorVidaClass) return;
 
-	ContadorVida = CreateWidget<UContadorDeVida>(GetWorld(), ContadorVidaClass);
+		ContadorVida = CreateWidget<UContadorDeVida>(GetWorld(), ContadorVidaClass);
 
-	if (!ContadorVida) return;
+		if (!ContadorVida) return;
 
-	ContadorVida->AddToViewport();
-	ContadorVida->SetVida(Vida);
+		ContadorVida->AddToViewport();
+		ContadorVida->SetVida(Vida);
+	}
+	else
+	{
+		ContadorVida->RemoveFromParent();
+	}
+}
+
+void ACpp_Player::AddMenuPauseToViewport()
+{
+	if (!MenuPauseClass) return;
+
+	MenuPause = CreateWidget<UMenuPause>(GetWorld(), MenuPauseClass);
+
+	if (!MenuPause) return;
+
+	MenuPause->AddToViewport();
+}
+
+void ACpp_Player::PlaySound(USoundBase* Sound)
+{
+	if (!Sound) return;
+
+	UGameplayStatics::PlaySound2D(GetWorld(), Sound);
 }
 
 void ACpp_Player::EndPlay(const EEndPlayReason::Type EndPlayReason)

@@ -29,6 +29,8 @@ void AInimigoVoador::BeginPlay()
 {
 	Super::BeginPlay();
 
+	UGameplayStatics::PlaySound2D(GetWorld(), SB_Flying);
+
 	Direction = GetRootComponent()->GetRelativeRotation().Yaw > 0 ? 1 : -1;
 
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
@@ -106,6 +108,8 @@ void AInimigoVoador::HandleChase(float DeltaTime)
 
 void AInimigoVoador::HandleReturning(float DeltaTime)
 {
+	UGameplayStatics::PlaySound2D(GetWorld(), SB_Returning);
+
 	FVector DirectionToOriginal = (OriginalLocation - GetActorLocation()).GetSafeNormal();
 
 	AddMovementInput(DirectionToOriginal, ChaseSpeed * DeltaTime);
@@ -152,6 +156,8 @@ void AInimigoVoador::OnSeePlayer(UPrimitiveComponent* OverlappedComponent, AActo
 	if (OtherActor && OtherActor != this && !bIsFollowingPlayer)
 	{
 		if (!OtherActor->ActorHasTag("Player")) return;
+
+		UGameplayStatics::PlaySound2D(GetWorld(), SB_SawPlayer);
 
 		bIsFollowingPlayer = true;
 

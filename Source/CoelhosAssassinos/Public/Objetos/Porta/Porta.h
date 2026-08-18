@@ -24,6 +24,8 @@ class COELHOSASSASSINOS_API APorta : public AActor
 
 			virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
+			void PlaySound(USoundBase* Sound);
+
 	#pragma endregion
 
 	#pragma region Variables
@@ -32,31 +34,43 @@ class COELHOSASSASSINOS_API APorta : public AActor
 
 		protected:
 			UPROPERTY(EditAnywhere)
-			class UPaperSpriteComponent* Comp_Sprite;
+			TObjectPtr<class UPaperSpriteComponent> Comp_Sprite;
 
 			UPROPERTY(EditAnywhere)
-			class UBoxComponent* Comp_BoxCollision;
+			TObjectPtr<class UBoxComponent> Comp_BoxCollision;
 
 			UPROPERTY(EditAnywhere, Category = "Mapa")
 			TSoftObjectPtr<UWorld> NextLevel;
 
 			UPROPERTY(EditAnywhere, Category = "Sprites")
-			class UPaperSprite* Sprite_Open;
+			TObjectPtr<class UPaperSprite> Sprite_Open;
 
 			UPROPERTY(EditAnywhere, Category = "Sprites")
-			class UPaperSprite* Sprite_Closed;
+			TObjectPtr<class UPaperSprite>  Sprite_Closed;
+
+			UPROPERTY(EditAnywhere, Category = "Sound")
+			TObjectPtr<USoundBase> SB_BaseFechado;
+
+			UPROPERTY(EditAnywhere, Category = "Sound")
+			TObjectPtr<USoundBase> SB_BaseAberto;
+
+			UPROPERTY(EditAnywhere, Category = "Sound")
+			TObjectPtr<USoundBase> SB_Abriu;
+
+			UPROPERTY(EditAnywhere, Category = "Sound")
+			TObjectPtr<USoundBase> SB_Entrar;
+
+			UPROPERTY()
+			TObjectPtr<class AMainGameMode> GameMode;
+
+			UPROPERTY()
+			TObjectPtr<class UGame_Save> SaveData;
 
 			bool bIsOpen;
 
-			UPROPERTY()
-			class AMainGameMode* GameMode;
+			TObjectPtr<class IInterface_SaveGame> SaveGameInterface;
 
-			UPROPERTY()
-			class UGame_Save* SaveData;
-
-			class IInterface_SaveGame* SaveGameInterface;
-
-			class UMain_Game_Instance* GameInstance;
+			TObjectPtr<class UMain_Game_Instance> GameInstance;
 
 	#pragma endregion
 	

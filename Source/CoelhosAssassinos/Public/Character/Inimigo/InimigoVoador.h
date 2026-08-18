@@ -51,7 +51,7 @@ class COELHOSASSASSINOS_API AInimigoVoador : public APaperCharacter
 
 		protected:
 			UPROPERTY(EditAnywhere)
-			class UBoxComponent* Comp_BoxCollision;
+			TObjectPtr<class UBoxComponent> Comp_BoxCollision;
 
 			UPROPERTY(EditAnywhere, Category = "State")
 			FVector OriginalLocation;
@@ -64,6 +64,15 @@ class COELHOSASSASSINOS_API AInimigoVoador : public APaperCharacter
 
 			UPROPERTY(EditAnywhere, Category = "Stats")
 			float ChaseSpeed;
+
+			UPROPERTY(EditAnywhere, Category = "Sound")
+			TObjectPtr<USoundBase> SB_Flying;
+
+			UPROPERTY(EditAnywhere, Category = "Sound")
+			TObjectPtr<USoundBase> SB_SawPlayer;
+
+			UPROPERTY(EditAnywhere, Category = "Sound")
+			TObjectPtr<USoundBase> SB_Returning;
 
 			EEnemyState EnemyState;
 

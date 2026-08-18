@@ -33,10 +33,13 @@ class COELHOSASSASSINOS_API AChave : public AActor
 
 		protected:
 			UPROPERTY(EditAnywhere)
-			class UBoxComponent* Comp_BoxCollision;
+			TObjectPtr<class UBoxComponent> Comp_BoxCollision;
 
 			UPROPERTY(EditAnywhere)
-			class UPaperSpriteComponent* Comp_Sprite;
+			TObjectPtr<class UPaperSpriteComponent> Comp_Sprite;
+
+			UPROPERTY(EditAnywhere, Category = "Sound")
+			TObjectPtr<USoundBase> SB_AoPegar;
 
 	#pragma endregion
 	

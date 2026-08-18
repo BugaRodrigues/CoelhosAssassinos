@@ -50,7 +50,7 @@ class COELHOSASSASSINOS_API AInimigoPulador : public APaperCharacter
 
 		protected:
 			UPROPERTY(EditAnywhere)
-			class UBoxComponent* Comp_ParedeCollision;
+			TObjectPtr<class UBoxComponent> Comp_ParedeCollision;
 
 			UPROPERTY(EditAnywhere, Category = "Stats")
 			float Velocidade;
@@ -60,6 +60,12 @@ class COELHOSASSASSINOS_API AInimigoPulador : public APaperCharacter
 
 			UPROPERTY(EditAnywhere, Category = "Animation")
 			TObjectPtr<class UPaperZDAnimationComponent> Comp_Animation;
+
+			UPROPERTY(EditAnywhere, Category = "Sound")
+			TObjectPtr<USoundBase> SB_Jump;
+
+			UPROPERTY(EditAnywhere, Category = "Sound")
+			TObjectPtr<USoundBase> SB_Land;
 
 			int32 Direction;
 

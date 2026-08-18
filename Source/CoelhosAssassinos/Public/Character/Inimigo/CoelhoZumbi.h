@@ -30,7 +30,7 @@ class COELHOSASSASSINOS_API ACoelhoZumbi : public APaperCharacter
 			UFUNCTION()
 			void OnInimigoBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
-			void Morreu() { Destroy(); };
+			void Morreu();
 
 			UFUNCTION()
 			virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
@@ -43,10 +43,10 @@ class COELHOSASSASSINOS_API ACoelhoZumbi : public APaperCharacter
 
 		private:
 			UPROPERTY(EditAnywhere)
-			class UBoxComponent* Comp_Box_Chao;
+			TObjectPtr<class UBoxComponent> Comp_Box_Chao;
 
 			UPROPERTY(EditAnywhere)
-			class UBoxComponent* Comp_Box_Parede;
+			TObjectPtr<class UBoxComponent> Comp_Box_Parede;
 
 			UPROPERTY(EditAnywhere, category = "Stats")
 			float Vida;
@@ -54,8 +54,17 @@ class COELHOSASSASSINOS_API ACoelhoZumbi : public APaperCharacter
 			UPROPERTY(EditAnywhere, category = "Stats")
 			float Velocidade;
 
+			UPROPERTY(EditAnywhere, Category = "Sound")
+			TObjectPtr<USoundBase> SB_Run;
+
+			UPROPERTY(EditAnywhere, Category = "Sound")
+			TObjectPtr<USoundBase> SB_Dano;
+
+			UPROPERTY(EditAnywhere, Category = "Sound")
+			TObjectPtr<USoundBase> SB_Die;
+
 			UPROPERTY()
-			class UMaterialInstanceDynamic* Mat_Inst_Dynamic;
+			TObjectPtr<class UMaterialInstanceDynamic> Mat_Inst_Dynamic;
 
 			float Direction;
 

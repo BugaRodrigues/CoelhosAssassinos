@@ -39,6 +39,8 @@ void UMenuPrincipal_Jogar::NativeDestruct()
 
 void UMenuPrincipal_Jogar::OnClicked_BTN_NewGame()
 {
+	PlaySound(SB_Click);
+
 	if (GameSave_Interface)
 	{
 		SaveData = NewObject<UGame_Save>();
@@ -62,6 +64,8 @@ void UMenuPrincipal_Jogar::OnClicked_BTN_NewGame()
 
 void UMenuPrincipal_Jogar::OnClicked_BTN_Continuar()
 {
+	PlaySound(SB_Click);
+
 	if (GameSave_Interface && SaveData)
 	{
 		UGameplayStatics::OpenLevel(this, SaveData->MapaName);
@@ -74,6 +78,8 @@ void UMenuPrincipal_Jogar::OnClicked_BTN_Continuar()
 
 void UMenuPrincipal_Jogar::OnClicked_BTN_Voltar()
 {
+	PlaySound(SB_Click);
+
 	if (UWidgetSwitcher* WS_Menu = Cast<UWidgetSwitcher>(GetParent()))
 	{
 		WS_Menu->SetActiveWidgetIndex(0);
@@ -87,4 +93,11 @@ void UMenuPrincipal_Jogar::OnClicked_BTN_Voltar()
 void UMenuPrincipal_Jogar::OnSaveGameComplete()
 {
 	UGameplayStatics::OpenLevel(this, SaveData->MapaName);
+}
+
+void UMenuPrincipal_Jogar::PlaySound(USoundBase* Sound)
+{
+	if (!Sound) return;
+
+	UGameplayStatics::PlaySound2D(GetWorld(), Sound);
 }

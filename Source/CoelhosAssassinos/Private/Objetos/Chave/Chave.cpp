@@ -1,5 +1,6 @@
 #include "Objetos/Chave/Chave.h"
 #include "Components/BoxComponent.h"
+#include "Kismet\GameplayStatics.h"
 #include "PaperSpriteComponent.h"
 
 AChave::AChave()
@@ -29,6 +30,8 @@ void AChave::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherAc
 	{
 		if (OtherActor->ActorHasTag(FName("Player")))
 		{
+			if (SB_AoPegar) UGameplayStatics::PlaySound2D(GetWorld(), SB_AoPegar);
+
 			OnKeyCollected.ExecuteIfBound();
 
 			Destroy();

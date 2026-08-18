@@ -1,5 +1,6 @@
 #include "Objetos/Trampolim/Trampolim.h"
 #include "Components/BoxComponent.h" 
+#include "Kismet/GameplayStatics.h"
 #include "PaperFlipbookComponent.h"
 #include "PaperCharacter.h"
 
@@ -19,7 +20,6 @@ ATrampolim::ATrampolim()
 	Comp_PaperFlipbook->SetupAttachment(RootComponent);
 	Comp_PaperFlipbook->SetRelativeLocationAndRotation(FVector(0.f, 0.f, -25.f), FRotator(0., -90., 0.));
 	Comp_PaperFlipbook->Stop();
-	Comp_PaperFlipbook->SetPlayRate(1.f);
 	Comp_PaperFlipbook->SetLooping(false);
 
 	Comp_Box_JumpArea = CreateDefaultSubobject<UBoxComponent>(TEXT("Box Collsion (Jump Area)"));
@@ -33,12 +33,6 @@ ATrampolim::ATrampolim()
 	Comp_Box_JumpArea->OnComponentBeginOverlap.AddDynamic(this, &ATrampolim::OnJumpAreaOverlap);
 }
 
-void ATrampolim::BeginPlay()
-{
-	Super::BeginPlay();
-	
-}
-
 void ATrampolim::OnJumpAreaOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (APaperCharacter* PaperCharacter = Cast<APaperCharacter>(OtherActor))
@@ -48,14 +42,15 @@ void ATrampolim::OnJumpAreaOverlap(UPrimitiveComponent* OverlappedComp, AActor* 
 			PaperCharacter->LaunchCharacter(FVector(0.f, 0.f, LaunchForce), false, true);
 
 			Comp_PaperFlipbook->PlayFromStart();
-			Comp_PaperFlipbook->OnFinishedPlaying.AddDynamic(this, &ATrampolim::OnEndAnimation);
+
+			PlaySound();
 		}
 	}
 }
 
-void ATrampolim::OnEndAnimation()
+void ATrampolim::PlaySound()
 {
-	Comp_PaperFlipbook->Stop();
-	Comp_PaperFlipbook->SetPlaybackPosition(0.f, false);
-	Comp_PaperFlipbook->OnFinishedPlaying.RemoveDynamic(this, &ATrampolim::OnEndAnimation);
+	if (!SB_Jumping) return;
+
+	UGameplayStatics::PlaySound2D(GetWorld(), SB_Jumping);
 }

@@ -70,6 +70,8 @@ void AArmadilhaDePedra::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent,
 	}
 	else if (OtherActor->ActorHasTag(FName("Mapa")))
 	{
+		TocarSom(SB_Caiu);
+
 		CurrentState = EFallingState::Returning;
 
 		GetWorldTimerManager().ClearTimer(TH_Falling);
@@ -99,6 +101,8 @@ void AArmadilhaDePedra::StartFalling()
 
 	Comp_BoxCollision->SetWorldLocation(NewLocation);
 
+	TocarSom(SB_Caindo);
+
 	if (FVector::Dist(StartLocation, NewLocation) >= MaxFallDistance)
 	{
 		CurrentState = EFallingState::Returning;
@@ -119,6 +123,8 @@ void AArmadilhaDePedra::StartReturning()
 
 	Comp_BoxCollision->SetWorldLocation(ReturnLocation);
 
+	TocarSom(SB_Voltando);
+
 	if (CurrentLocation.Equals(StartLocation, 1.f))
 	{
 		Comp_BoxCollision->SetWorldLocation(StartLocation);
@@ -129,4 +135,11 @@ void AArmadilhaDePedra::StartReturning()
 
 		return;
 	}
+}
+
+void AArmadilhaDePedra::TocarSom(USoundBase* Sound)
+{
+	if (!Sound) return;
+
+	UGameplayStatics::PlaySound2D(GetWorld(), Sound);
 }

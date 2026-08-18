@@ -2,6 +2,7 @@
 #include "Components/SplineComponent.h"
 #include "Components/BoxComponent.h" 
 #include "PaperFlipbookComponent.h"
+#include "Kismet\GameplayStatics.h"
 #include "TimerManager.h"
 
 APlataformaMovel::APlataformaMovel()
@@ -30,6 +31,8 @@ void APlataformaMovel::BeginPlay()
 	if (!Comp_Spline) return;
 
 	SplineLenght = Comp_Spline->GetSplineLength();
+
+	if (SB_Base) UGameplayStatics::PlaySound2D(GetWorld(), SB_Base);
 }
 
 void APlataformaMovel::Tick(float DeltaTime)

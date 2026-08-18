@@ -29,18 +29,20 @@ class COELHOSASSASSINOS_API APlataformaMovel : public AActor
 
 		protected:
 			UPROPERTY(EditAnywhere)
-			class UPaperFlipbookComponent* Comp_PaperFlipbook;
+			TObjectPtr<class UPaperFlipbookComponent> Comp_PaperFlipbook;
 
 			UPROPERTY(EditAnywhere)
-			class UBoxComponent* Comp_BoxCollision;
+			TObjectPtr<class UBoxComponent> Comp_BoxCollision;
 
 			UPROPERTY(EditAnywhere)
-			class USplineComponent* Comp_Spline;
+			TObjectPtr<class USplineComponent> Comp_Spline;
 
 			UPROPERTY(EditAnywhere, Category = "Stats")
 			float MovementSpeed;
 
-		private:
+			UPROPERTY(EditAnywhere, Category = "Sound")
+			TObjectPtr<USoundBase> SB_Base;
+
 			float CurrentDistance;
 
 			int32 Direction;

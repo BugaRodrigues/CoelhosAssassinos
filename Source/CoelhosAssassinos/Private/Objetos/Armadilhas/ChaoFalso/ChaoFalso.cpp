@@ -1,5 +1,6 @@
 #include "Objetos/Armadilhas/ChaoFalso/ChaoFalso.h"
 #include "Components/BoxComponent.h"
+#include "Kismet\GameplayStatics.h"
 #include "PaperSpriteComponent.h"
 #include "TimerManager.h"
 
@@ -26,6 +27,8 @@ void AChaoFalso::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* Oth
 	{
 		if (OtherActor->GetVelocity().Z <= 0.f)
 		{
+			TocarSom(SB_ChaoFechar ? SB_ChaoFechar : nullptr);
+
 			bIsProcessing = true;
 
 			GetWorld()->GetTimerManager().ClearTimer(TH_Destruct);
@@ -54,6 +57,8 @@ void AChaoFalso::OnEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* Other
 
 void AChaoFalso::Destruct()
 {
+	TocarSom(SB_ChaoQuebrar ? SB_ChaoQuebrar : nullptr);
+
 	Comp_PaperSprite->SetSprite(Sprite_Inativo ? Sprite_Inativo : nullptr);
 
 	GetWorld()->GetTimerManager().ClearTimer(TH_Construct);
@@ -64,9 +69,16 @@ void AChaoFalso::Destruct()
 
 void AChaoFalso::Construct()
 {
+	TocarSom(SB_ChaoRegenerar ? SB_ChaoRegenerar : nullptr);
+
 	bIsProcessing = false;
 
 	Comp_PaperSprite->SetSprite(Sprite_Ativo ? Sprite_Ativo : nullptr);
 
 	Comp_BoxCollision->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+}
+
+void AChaoFalso::TocarSom(USoundBase* Sound)
+{
+	if (Sound) UGameplayStatics::PlaySound2D(GetWorld(), Sound);
 }
