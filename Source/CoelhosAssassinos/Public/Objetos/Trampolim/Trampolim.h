@@ -22,8 +22,6 @@ class COELHOSASSASSINOS_API ATrampolim : public AActor
 			UFUNCTION()
 			void OnJumpAreaOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
-			void PlaySound();
-
 	#pragma endregion
 
 	#pragma region Variaveis
@@ -32,13 +30,16 @@ class COELHOSASSASSINOS_API ATrampolim : public AActor
 
 		private:
 			UPROPERTY(EditAnywhere)
-			class UPaperFlipbookComponent* Comp_PaperFlipbook;
+			TObjectPtr<class UPaperFlipbookComponent> Comp_PaperFlipbook;
 
 			UPROPERTY(EditAnywhere)
-			class UBoxComponent* Comp_BoxCollision;
+			TObjectPtr<class UBoxComponent> Comp_BoxCollision;
 
 			UPROPERTY(EditAnywhere)
-			class UBoxComponent* Comp_Box_JumpArea;
+			TObjectPtr<class UBoxComponent> Comp_Box_JumpArea;
+
+			UPROPERTY(EditAnywhere)
+			TObjectPtr<class UAudioComponent> Comp_Audio;
 
 			UPROPERTY(EditAnywhere, Category = "Lauch")
 			float LaunchForce;

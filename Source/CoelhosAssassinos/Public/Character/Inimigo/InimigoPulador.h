@@ -42,6 +42,8 @@ class COELHOSASSASSINOS_API AInimigoPulador : public APaperCharacter
 
 			void SetDirectionRotation(int32 NewDirection);
 
+			void PlaySound(USoundBase* Sound);
+
 	#pragma endregion
 
 	#pragma region Variables
@@ -60,6 +62,9 @@ class COELHOSASSASSINOS_API AInimigoPulador : public APaperCharacter
 
 			UPROPERTY(EditAnywhere, Category = "Animation")
 			TObjectPtr<class UPaperZDAnimationComponent> Comp_Animation;
+
+			UPROPERTY(EditAnywhere)
+			TObjectPtr<class UAudioComponent> Comp_Audio;
 
 			UPROPERTY(EditAnywhere, Category = "Sound")
 			TObjectPtr<USoundBase> SB_Jump;

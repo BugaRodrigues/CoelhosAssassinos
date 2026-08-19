@@ -29,7 +29,7 @@ class COELHOSASSASSINOS_API AChaoFalso : public AActor
 
 			void Construct();
 
-			void TocarSom(USoundBase* Sound);
+			void PlaySound(USoundBase* Sound);
 
 	#pragma endregion
 
@@ -52,6 +52,9 @@ class COELHOSASSASSINOS_API AChaoFalso : public AActor
 
 			UPROPERTY(EditAnywhere, category = "Sprites")
 			TObjectPtr<class UPaperSprite> Sprite_Inativo;
+
+			UPROPERTY(EditAnywhere)
+			TObjectPtr<class UAudioComponent> Comp_Audio;
 
 			UPROPERTY(EditAnywhere, Category = "Sound")
 			TObjectPtr<USoundBase> SB_ChaoFechar;

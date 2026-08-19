@@ -35,6 +35,8 @@ class COELHOSASSASSINOS_API ACoelhoZumbi : public APaperCharacter
 			UFUNCTION()
 			virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
+			void PlaySound(USoundBase* Sound);
+
 	#pragma endregion
 
 	#pragma region Variaveis
@@ -48,14 +50,17 @@ class COELHOSASSASSINOS_API ACoelhoZumbi : public APaperCharacter
 			UPROPERTY(EditAnywhere)
 			TObjectPtr<class UBoxComponent> Comp_Box_Parede;
 
+			UPROPERTY(EditAnywhere)
+			TObjectPtr<class UAudioComponent> Comp_Audio;
+
+			UPROPERTY(EditAnywhere)
+			TObjectPtr<class UPaperZDAnimationComponent> Comp_Animation;
+
 			UPROPERTY(EditAnywhere, category = "Stats")
 			float Vida;
 
 			UPROPERTY(EditAnywhere, category = "Stats")
 			float Velocidade;
-
-			UPROPERTY(EditAnywhere, Category = "Sound")
-			TObjectPtr<USoundBase> SB_Run;
 
 			UPROPERTY(EditAnywhere, Category = "Sound")
 			TObjectPtr<USoundBase> SB_Dano;
@@ -71,6 +76,7 @@ class COELHOSASSASSINOS_API ACoelhoZumbi : public APaperCharacter
 			bool bCanMove;
 
 			struct FTimerHandle TH_Morte;
+			struct FTimerHandle TH_Move;
 
 	#pragma endregion
 

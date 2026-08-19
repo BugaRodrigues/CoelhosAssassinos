@@ -43,6 +43,8 @@ class COELHOSASSASSINOS_API AInimigoVoador : public APaperCharacter
 
 			void HandleChase(float DeltaTime);
 
+			void PlaySound(USoundBase* Sound);
+
 	#pragma endregion
 
 	#pragma region Variaveis
@@ -52,6 +54,12 @@ class COELHOSASSASSINOS_API AInimigoVoador : public APaperCharacter
 		protected:
 			UPROPERTY(EditAnywhere)
 			TObjectPtr<class UBoxComponent> Comp_BoxCollision;
+
+			UPROPERTY(EditAnywhere)
+			TObjectPtr<class UAudioComponent> Comp_Audio;
+
+			UPROPERTY(EditAnywhere)
+			TObjectPtr<class UPaperZDAnimationComponent> Comp_Animation;
 
 			UPROPERTY(EditAnywhere, Category = "State")
 			FVector OriginalLocation;

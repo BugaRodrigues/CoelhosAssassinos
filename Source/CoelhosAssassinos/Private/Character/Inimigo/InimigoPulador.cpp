@@ -3,6 +3,7 @@
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Components/CapsuleComponent.h"
 #include "PaperZDAnimationComponent.h"
+#include "Components/AudioComponent.h"
 #include "Components/BoxComponent.h"
 #include "PaperFlipbookComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -23,6 +24,15 @@ AInimigoPulador::AInimigoPulador()
 	Comp_ParedeCollision->OnComponentBeginOverlap.AddDynamic(this, &AInimigoPulador::OnParedeBeginOverlap);
 
 	Comp_Animation = CreateDefaultSubobject<UPaperZDAnimationComponent>(TEXT("Animation Component"));
+
+	Comp_Audio = CreateDefaultSubobject<UAudioComponent>(TEXT("Componente Audio"));
+	Comp_Audio->SetupAttachment(RootComponent);
+	Comp_Audio->bAutoActivate = false;
+	Comp_Audio->bOverrideAttenuation = true;
+	FSoundAttenuationSettings AttenuationSettings;
+	AttenuationSettings.AttenuationShapeExtents = FVector(0.f, 600.f, 0.f);
+	AttenuationSettings.FalloffDistance = 900.f;
+	Comp_Audio->AdjustAttenuation(AttenuationSettings);
 
 	Tags.Add("Inimigo");
 }
@@ -46,7 +56,7 @@ void AInimigoPulador::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, A
 {
 	if (OtherActor && OtherActor != this)
 	{
-		UGameplayStatics::PlaySound2D(GetWorld(), SB_Land);
+		PlaySound(SB_Land);
 
 		if (OtherActor->ActorHasTag("Player"))
 		{
@@ -89,7 +99,7 @@ void AInimigoPulador::Jump()
 { 
 	if (!VerificarSeTemChao()) SetDirectionRotation(Direction *= -1);
 
-	UGameplayStatics::PlaySound2D(GetWorld(), SB_Jump);
+	PlaySound(SB_Jump);
 
 	float Gravidade = GetCharacterMovement()->GetGravityZ() * -1;
 	float Vz0 = FMath::Sqrt(2.f * Gravidade * AlturaDoPulo);
@@ -144,6 +154,14 @@ void AInimigoPulador::SetDirectionRotation(int32 NewDirection)
 		Root->SetRelativeRotation(NewRotation, false, nullptr, ETeleportType::TeleportPhysics);
 	}
 }
+
+void AInimigoPulador::PlaySound(USoundBase* Sound)
+{
+	if (!Sound) return;
+
+	Comp_Audio->SetSound(Sound);
+	Comp_Audio->Play();
+};
 
 void AInimigoPulador::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {

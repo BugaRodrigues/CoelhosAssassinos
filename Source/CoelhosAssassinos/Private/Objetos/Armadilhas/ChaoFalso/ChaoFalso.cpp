@@ -1,6 +1,7 @@
 #include "Objetos/Armadilhas/ChaoFalso/ChaoFalso.h"
+#include "Components/AudioComponent.h"
 #include "Components/BoxComponent.h"
-#include "Kismet\GameplayStatics.h"
+#include "Kismet/GameplayStatics.h"
 #include "PaperSpriteComponent.h"
 #include "TimerManager.h"
 
@@ -17,8 +18,17 @@ AChaoFalso::AChaoFalso()
 	Comp_BoxCollision->OnComponentEndOverlap.AddDynamic(this, &AChaoFalso::OnEndOverlap);
 
 	Comp_PaperSprite = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("Paper Sprite"));
-	Comp_PaperSprite->SetupAttachment(GetRootComponent());
-	Comp_PaperSprite->SetSprite(Sprite_Ativo ? Sprite_Ativo : nullptr);
+	Comp_PaperSprite->SetupAttachment(RootComponent);
+	if (Sprite_Ativo) Comp_PaperSprite->SetSprite(Sprite_Ativo);
+
+	Comp_Audio = CreateDefaultSubobject<UAudioComponent>(TEXT("Componente Audio"));
+	Comp_Audio->SetupAttachment(RootComponent);
+	Comp_Audio->bAutoActivate = false;
+	Comp_Audio->bOverrideAttenuation = true;
+	FSoundAttenuationSettings AttenuationSettings;
+	AttenuationSettings.AttenuationShapeExtents = FVector(0.f, 600.f, 0.f);
+	AttenuationSettings.FalloffDistance = 900.f;
+	Comp_Audio->AdjustAttenuation(AttenuationSettings);
 }
 
 void AChaoFalso::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -27,14 +37,14 @@ void AChaoFalso::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* Oth
 	{
 		if (OtherActor->GetVelocity().Z <= 0.f)
 		{
-			TocarSom(SB_ChaoFechar ? SB_ChaoFechar : nullptr);
+			PlaySound(SB_ChaoFechar);
 
 			bIsProcessing = true;
 
 			GetWorld()->GetTimerManager().ClearTimer(TH_Destruct);
 			GetWorld()->GetTimerManager().SetTimer(TH_Destruct, this, &AChaoFalso::Destruct, 1.5f);
 
-			Comp_PaperSprite->SetSprite(Sprite_Completo ? Sprite_Completo : nullptr);
+			if (Sprite_Completo) Comp_PaperSprite->SetSprite(Sprite_Completo);
 
 			Comp_BoxCollision->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
 		}
@@ -49,7 +59,7 @@ void AChaoFalso::OnEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* Other
 {
 	if (OtherActor && OtherActor != this && !bIsProcessing)
 	{
-		Comp_PaperSprite->SetSprite(Sprite_Completo ? Sprite_Completo : nullptr);
+		if (Sprite_Completo) Comp_PaperSprite->SetSprite(Sprite_Completo);
 
 		Comp_BoxCollision->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 	}
@@ -57,9 +67,9 @@ void AChaoFalso::OnEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* Other
 
 void AChaoFalso::Destruct()
 {
-	TocarSom(SB_ChaoQuebrar ? SB_ChaoQuebrar : nullptr);
+	PlaySound(SB_ChaoQuebrar);
 
-	Comp_PaperSprite->SetSprite(Sprite_Inativo ? Sprite_Inativo : nullptr);
+	if (Sprite_Inativo) Comp_PaperSprite->SetSprite(Sprite_Inativo);
 
 	GetWorld()->GetTimerManager().ClearTimer(TH_Construct);
 	GetWorld()->GetTimerManager().SetTimer(TH_Construct, this, &AChaoFalso::Construct, 3.f);
@@ -69,16 +79,19 @@ void AChaoFalso::Destruct()
 
 void AChaoFalso::Construct()
 {
-	TocarSom(SB_ChaoRegenerar ? SB_ChaoRegenerar : nullptr);
+	PlaySound(SB_ChaoRegenerar);
 
 	bIsProcessing = false;
 
-	Comp_PaperSprite->SetSprite(Sprite_Ativo ? Sprite_Ativo : nullptr);
+	if (Sprite_Ativo) Comp_PaperSprite->SetSprite(Sprite_Ativo);
 
 	Comp_BoxCollision->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 }
 
-void AChaoFalso::TocarSom(USoundBase* Sound)
+void AChaoFalso::PlaySound(USoundBase* Sound)
 {
-	if (Sound) UGameplayStatics::PlaySound2D(GetWorld(), Sound);
+	if (!Sound) return;
+
+	Comp_Audio->SetSound(Sound);
+	Comp_Audio->Play();
 }

@@ -1,6 +1,8 @@
 #include "Character/Inimigo/CoelhoZumbi.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/AudioComponent.h"
+#include "PaperZDAnimationComponent.h"
 #include "Components/BoxComponent.h" 
 #include "Kismet/GameplayStatics.h"
 #include "PaperFlipbookComponent.h"
@@ -25,6 +27,17 @@ ACoelhoZumbi::ACoelhoZumbi()
 	Comp_Box_Parede->SetupAttachment(GetRootComponent());
 	Comp_Box_Parede->OnComponentBeginOverlap.AddDynamic(this, &ACoelhoZumbi::OnBeginCollisionParede);
 
+	Comp_Animation = CreateDefaultSubobject<UPaperZDAnimationComponent>(TEXT("PaperZD Animation"));
+
+	Comp_Audio = CreateDefaultSubobject<UAudioComponent>(TEXT("Componente Audio"));
+	Comp_Audio->SetupAttachment(RootComponent);
+	Comp_Audio->bAutoActivate = false;
+	Comp_Audio->bOverrideAttenuation = true;
+	FSoundAttenuationSettings AttenuationSettings;
+	AttenuationSettings.AttenuationShapeExtents = FVector(0.f, 600.f, 0.f);
+	AttenuationSettings.FalloffDistance = 900.f;
+	Comp_Audio->AdjustAttenuation(AttenuationSettings);
+
 	Tags.Add(FName("Inimigo"));
 }
 
@@ -47,8 +60,6 @@ void ACoelhoZumbi::BeginPlay()
 		}
 
 	#pragma endregion
-
-	UGameplayStatics::PlaySound2D(GetWorld(), SB_Run);
 }
 
 void ACoelhoZumbi::Tick(float DeltaTime)
@@ -94,6 +105,10 @@ void ACoelhoZumbi::OnInimigoBeginOverlap(UPrimitiveComponent* OverlappedComp, AA
 		if (OtherActor->GetActorLocation().Z < GetActorLocation().Z + (GetCapsuleComponent()->GetScaledCapsuleHalfHeight() / 2))
 		{
 			UGameplayStatics::ApplyDamage(OtherActor, 1.f, GetController(), this, UDamageType::StaticClass());
+
+			bCanMove = false;
+
+			GetWorldTimerManager().SetTimer(TH_Move, [this] () { bCanMove = true; }, .75f, false);
 		}
 		else
 		{
@@ -109,7 +124,7 @@ void ACoelhoZumbi::OnInimigoBeginOverlap(UPrimitiveComponent* OverlappedComp, AA
 
 float ACoelhoZumbi::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	UGameplayStatics::PlaySound2D(GetWorld(), SB_Dano);
+	PlaySound(SB_Dano);
 
 	Vida -= DamageAmount;
 
@@ -163,7 +178,15 @@ float ACoelhoZumbi::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 
 void ACoelhoZumbi::Morreu()
 {
-	UGameplayStatics::PlaySound2D(GetWorld(), SB_Die);
+	PlaySound(SB_Die);
 
 	Destroy();
 }
+
+void ACoelhoZumbi::PlaySound(USoundBase* Sound)
+{
+	if (!Sound) return;
+
+	Comp_Audio->SetSound(Sound);
+	Comp_Audio->Play();
+};

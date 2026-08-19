@@ -37,6 +37,9 @@ class COELHOSASSASSINOS_API APlataformaMovel : public AActor
 			UPROPERTY(EditAnywhere)
 			TObjectPtr<class USplineComponent> Comp_Spline;
 
+			UPROPERTY(EditAnywhere)
+			TObjectPtr<class UAudioComponent> Comp_Audio;
+
 			UPROPERTY(EditAnywhere, Category = "Stats")
 			float MovementSpeed;
 

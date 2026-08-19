@@ -24,8 +24,6 @@ class COELHOSASSASSINOS_API APorta : public AActor
 
 			virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
-			void PlaySound(USoundBase* Sound);
-
 	#pragma endregion
 
 	#pragma region Variables
@@ -47,6 +45,9 @@ class COELHOSASSASSINOS_API APorta : public AActor
 
 			UPROPERTY(EditAnywhere, Category = "Sprites")
 			TObjectPtr<class UPaperSprite>  Sprite_Closed;
+
+			UPROPERTY(EditAnywhere)
+			TObjectPtr<UAudioComponent> Comp_Audio;
 
 			UPROPERTY(EditAnywhere, Category = "Sound")
 			TObjectPtr<USoundBase> SB_BaseFechado;

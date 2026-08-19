@@ -1,4 +1,5 @@
 #include "Objetos/Trampolim/Trampolim.h"
+#include "Components/AudioComponent.h"
 #include "Components/BoxComponent.h" 
 #include "Kismet/GameplayStatics.h"
 #include "PaperFlipbookComponent.h"
@@ -31,6 +32,16 @@ ATrampolim::ATrampolim()
 	Comp_Box_JumpArea->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 	Comp_Box_JumpArea->SetGenerateOverlapEvents(true);
 	Comp_Box_JumpArea->OnComponentBeginOverlap.AddDynamic(this, &ATrampolim::OnJumpAreaOverlap);
+
+	Comp_Audio = CreateDefaultSubobject<UAudioComponent>(TEXT("Componente Audio"));
+	Comp_Audio->SetupAttachment(RootComponent);
+	Comp_Audio->bAutoActivate = false;
+	Comp_Audio->bOverrideAttenuation = true;
+	Comp_Audio->SetSound(SB_Jumping ? SB_Jumping : nullptr);
+	FSoundAttenuationSettings AttenuationSettings;
+	AttenuationSettings.AttenuationShapeExtents = FVector(0.f, 600.f, 0.f);
+	AttenuationSettings.FalloffDistance = 900.f;
+	Comp_Audio->AdjustAttenuation(AttenuationSettings);
 }
 
 void ATrampolim::OnJumpAreaOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -43,14 +54,7 @@ void ATrampolim::OnJumpAreaOverlap(UPrimitiveComponent* OverlappedComp, AActor* 
 
 			Comp_PaperFlipbook->PlayFromStart();
 
-			PlaySound();
+			Comp_Audio->Play();
 		}
 	}
-}
-
-void ATrampolim::PlaySound()
-{
-	if (!SB_Jumping) return;
-
-	UGameplayStatics::PlaySound2D(GetWorld(), SB_Jumping);
 }

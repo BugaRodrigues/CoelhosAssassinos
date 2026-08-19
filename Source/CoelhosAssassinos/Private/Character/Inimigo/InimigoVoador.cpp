@@ -3,6 +3,8 @@
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SplineComponent.h"
+#include "PaperZDAnimationComponent.h"
+#include "Components/AudioComponent.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -21,6 +23,17 @@ AInimigoVoador::AInimigoVoador()
 	Comp_BoxCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("Box Collision"));
 	Comp_BoxCollision->SetupAttachment(GetRootComponent());
 	Comp_BoxCollision->OnComponentBeginOverlap.AddDynamic(this, &AInimigoVoador::OnSeePlayer);
+
+	Comp_Animation = CreateDefaultSubobject<UPaperZDAnimationComponent>(TEXT("PaperZD Animation Component"));
+
+	Comp_Audio = CreateDefaultSubobject<UAudioComponent>(TEXT("Componente Audio"));
+	Comp_Audio->SetupAttachment(RootComponent);
+	Comp_Audio->bAutoActivate = false;
+	Comp_Audio->bOverrideAttenuation = true;
+	FSoundAttenuationSettings AttenuationSettings;
+	AttenuationSettings.AttenuationShapeExtents = FVector(0.f, 600.f, 0.f);
+	AttenuationSettings.FalloffDistance = 900.f;
+	Comp_Audio->AdjustAttenuation(AttenuationSettings);
 
 	Tags.Add("Inimigo");
 }
@@ -108,7 +121,7 @@ void AInimigoVoador::HandleChase(float DeltaTime)
 
 void AInimigoVoador::HandleReturning(float DeltaTime)
 {
-	UGameplayStatics::PlaySound2D(GetWorld(), SB_Returning);
+	PlaySound(SB_Returning);
 
 	FVector DirectionToOriginal = (OriginalLocation - GetActorLocation()).GetSafeNormal();
 
@@ -157,7 +170,7 @@ void AInimigoVoador::OnSeePlayer(UPrimitiveComponent* OverlappedComponent, AActo
 	{
 		if (!OtherActor->ActorHasTag("Player")) return;
 
-		UGameplayStatics::PlaySound2D(GetWorld(), SB_SawPlayer);
+		PlaySound(SB_SawPlayer);
 
 		bIsFollowingPlayer = true;
 
@@ -192,3 +205,11 @@ void AInimigoVoador::SetSeeingPlayerCollision()
 		Comp_BoxCollision->SetRelativeLocation(FVector(0.f, 0.f, -HitResult.Distance / 2));
 	}
 }
+
+void AInimigoVoador::PlaySound(USoundBase* Sound)
+{
+	if (!Sound) return;
+
+	Comp_Audio->SetSound(Sound);
+	Comp_Audio->Play();
+};

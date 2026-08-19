@@ -40,7 +40,7 @@ class COELHOSASSASSINOS_API AArmadilhaDePedra : public AActor
 
 			void StartReturning();
 
-			void TocarSom(USoundBase* Sound);
+			void PlaySound(USoundBase* Sound);
 
 	#pragma endregion
 
@@ -60,6 +60,9 @@ class COELHOSASSASSINOS_API AArmadilhaDePedra : public AActor
 
 			UPROPERTY(EditAnywhere)
 			TObjectPtr<class UBoxComponent> Comp_BoxProximadade;
+
+			UPROPERTY(EditAnywhere)
+			TObjectPtr<class UAudioComponent> Comp_Audio;
 
 			UPROPERTY(EditAnywhere, Category = "Falling")
 			float FallingSpeed;

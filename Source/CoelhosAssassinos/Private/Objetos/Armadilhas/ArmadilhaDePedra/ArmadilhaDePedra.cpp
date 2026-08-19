@@ -1,5 +1,6 @@
 #include "Objetos/Armadilhas/ArmadilhaDePedra/ArmadilhaDePedra.h"
 #include "Components/SceneComponent.h"
+#include "Components/AudioComponent.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "PaperSpriteComponent.h"
@@ -30,6 +31,15 @@ AArmadilhaDePedra::AArmadilhaDePedra()
 	Comp_BoxProximadade = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxProximadade"));
 	Comp_BoxProximadade->SetupAttachment(RootComponent);
 	Comp_BoxProximadade->OnComponentBeginOverlap.AddDynamic(this, &AArmadilhaDePedra::OnPlayerPassou);
+
+	Comp_Audio = CreateDefaultSubobject<UAudioComponent>(TEXT("Componente Audio"));
+	Comp_Audio->SetupAttachment(RootComponent);
+	Comp_Audio->bAutoActivate = false;
+	Comp_Audio->bOverrideAttenuation = true;
+	FSoundAttenuationSettings AttenuationSettings;
+	AttenuationSettings.AttenuationShapeExtents = FVector(0.f, 600.f, 0.f);
+	AttenuationSettings.FalloffDistance = 900.f;
+	Comp_Audio->AdjustAttenuation(AttenuationSettings);
 }
 
 void AArmadilhaDePedra::BeginPlay()
@@ -70,7 +80,7 @@ void AArmadilhaDePedra::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent,
 	}
 	else if (OtherActor->ActorHasTag(FName("Mapa")))
 	{
-		TocarSom(SB_Caiu);
+		PlaySound(SB_Caiu);
 
 		CurrentState = EFallingState::Returning;
 
@@ -101,7 +111,7 @@ void AArmadilhaDePedra::StartFalling()
 
 	Comp_BoxCollision->SetWorldLocation(NewLocation);
 
-	TocarSom(SB_Caindo);
+	PlaySound(SB_Caindo);
 
 	if (FVector::Dist(StartLocation, NewLocation) >= MaxFallDistance)
 	{
@@ -123,7 +133,7 @@ void AArmadilhaDePedra::StartReturning()
 
 	Comp_BoxCollision->SetWorldLocation(ReturnLocation);
 
-	TocarSom(SB_Voltando);
+	PlaySound(SB_Voltando);
 
 	if (CurrentLocation.Equals(StartLocation, 1.f))
 	{
@@ -137,9 +147,10 @@ void AArmadilhaDePedra::StartReturning()
 	}
 }
 
-void AArmadilhaDePedra::TocarSom(USoundBase* Sound)
+void AArmadilhaDePedra::PlaySound(USoundBase* Sound)
 {
 	if (!Sound) return;
 
-	UGameplayStatics::PlaySound2D(GetWorld(), Sound);
+	Comp_Audio->SetSound(Sound);
+	Comp_Audio->Play();
 }

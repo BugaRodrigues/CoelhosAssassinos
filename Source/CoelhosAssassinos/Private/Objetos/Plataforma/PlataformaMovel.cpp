@@ -1,5 +1,6 @@
 #include "Objetos/Plataforma/PlataformaMovel.h"
 #include "Components/SplineComponent.h"
+#include "Components/AudioComponent.h"
 #include "Components/BoxComponent.h" 
 #include "PaperFlipbookComponent.h"
 #include "Kismet\GameplayStatics.h"
@@ -22,6 +23,15 @@ APlataformaMovel::APlataformaMovel()
 
 	Comp_PaperFlipbook = CreateDefaultSubobject<UPaperFlipbookComponent>(TEXT("Paper Sprite Component"));
 	Comp_PaperFlipbook->SetupAttachment(Comp_BoxCollision);
+
+	Comp_Audio = CreateDefaultSubobject<UAudioComponent>(TEXT("Componente Audio"));
+	Comp_Audio->SetupAttachment(RootComponent);
+	Comp_Audio->bAutoActivate = false;
+	Comp_Audio->bOverrideAttenuation = true;
+	FSoundAttenuationSettings AttenuationSettings;
+	AttenuationSettings.AttenuationShapeExtents = FVector(0.f, 600.f, 0.f);
+	AttenuationSettings.FalloffDistance = 900.f;
+	Comp_Audio->AdjustAttenuation(AttenuationSettings);
 }
 
 void APlataformaMovel::BeginPlay()
@@ -32,7 +42,11 @@ void APlataformaMovel::BeginPlay()
 
 	SplineLenght = Comp_Spline->GetSplineLength();
 
-	if (SB_Base) UGameplayStatics::PlaySound2D(GetWorld(), SB_Base);
+	if (SB_Base)
+	{
+		Comp_Audio->SetSound(SB_Base);
+		Comp_Audio->Play();
+	}
 }
 
 void APlataformaMovel::Tick(float DeltaTime)
