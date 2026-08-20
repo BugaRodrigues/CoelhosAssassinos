@@ -30,10 +30,6 @@ AInimigoVoador::AInimigoVoador()
 	Comp_Audio->SetupAttachment(RootComponent);
 	Comp_Audio->bAutoActivate = false;
 	Comp_Audio->bOverrideAttenuation = true;
-	FSoundAttenuationSettings AttenuationSettings;
-	AttenuationSettings.AttenuationShapeExtents = FVector(0.f, 600.f, 0.f);
-	AttenuationSettings.FalloffDistance = 900.f;
-	Comp_Audio->AdjustAttenuation(AttenuationSettings);
 
 	Tags.Add("Inimigo");
 }
@@ -41,8 +37,6 @@ AInimigoVoador::AInimigoVoador()
 void AInimigoVoador::BeginPlay()
 {
 	Super::BeginPlay();
-
-	UGameplayStatics::PlaySound2D(GetWorld(), SB_Flying);
 
 	Direction = GetRootComponent()->GetRelativeRotation().Yaw > 0 ? 1 : -1;
 
@@ -208,7 +202,7 @@ void AInimigoVoador::SetSeeingPlayerCollision()
 
 void AInimigoVoador::PlaySound(USoundBase* Sound)
 {
-	if (!Sound) return;
+	if (!Sound || !Comp_Audio) return;
 
 	Comp_Audio->SetSound(Sound);
 	Comp_Audio->Play();

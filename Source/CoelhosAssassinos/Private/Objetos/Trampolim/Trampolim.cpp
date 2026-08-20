@@ -10,7 +10,7 @@ ATrampolim::ATrampolim()
 	PrimaryActorTick.bCanEverTick = false;
 
 	LaunchForce = 1000.f;
-
+	
 	Comp_BoxCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("Box Collision"));
 	SetRootComponent(Comp_BoxCollision);
 	Comp_BoxCollision->InitBoxExtent(FVector(2.f, 55.f, 32.f));
@@ -37,11 +37,13 @@ ATrampolim::ATrampolim()
 	Comp_Audio->SetupAttachment(RootComponent);
 	Comp_Audio->bAutoActivate = false;
 	Comp_Audio->bOverrideAttenuation = true;
-	Comp_Audio->SetSound(SB_Jumping ? SB_Jumping : nullptr);
-	FSoundAttenuationSettings AttenuationSettings;
-	AttenuationSettings.AttenuationShapeExtents = FVector(0.f, 600.f, 0.f);
-	AttenuationSettings.FalloffDistance = 900.f;
-	Comp_Audio->AdjustAttenuation(AttenuationSettings);
+}
+
+void ATrampolim::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (SB_Jumping) Comp_Audio->SetSound(SB_Jumping);
 }
 
 void ATrampolim::OnJumpAreaOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)

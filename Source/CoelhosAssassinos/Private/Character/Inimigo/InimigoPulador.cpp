@@ -29,10 +29,6 @@ AInimigoPulador::AInimigoPulador()
 	Comp_Audio->SetupAttachment(RootComponent);
 	Comp_Audio->bAutoActivate = false;
 	Comp_Audio->bOverrideAttenuation = true;
-	FSoundAttenuationSettings AttenuationSettings;
-	AttenuationSettings.AttenuationShapeExtents = FVector(0.f, 600.f, 0.f);
-	AttenuationSettings.FalloffDistance = 900.f;
-	Comp_Audio->AdjustAttenuation(AttenuationSettings);
 
 	Tags.Add("Inimigo");
 }
@@ -157,7 +153,7 @@ void AInimigoPulador::SetDirectionRotation(int32 NewDirection)
 
 void AInimigoPulador::PlaySound(USoundBase* Sound)
 {
-	if (!Sound) return;
+	if (!Sound || !Comp_Audio) return;
 
 	Comp_Audio->SetSound(Sound);
 	Comp_Audio->Play();

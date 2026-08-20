@@ -24,6 +24,8 @@ class COELHOSASSASSINOS_API APorta : public AActor
 
 			virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
+			void PlaySound(USoundBase* Sound);
+
 	#pragma endregion
 
 	#pragma region Variables

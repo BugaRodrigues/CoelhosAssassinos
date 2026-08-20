@@ -74,9 +74,6 @@ class COELHOSASSASSINOS_API AInimigoVoador : public APaperCharacter
 			float ChaseSpeed;
 
 			UPROPERTY(EditAnywhere, Category = "Sound")
-			TObjectPtr<USoundBase> SB_Flying;
-
-			UPROPERTY(EditAnywhere, Category = "Sound")
 			TObjectPtr<USoundBase> SB_SawPlayer;
 
 			UPROPERTY(EditAnywhere, Category = "Sound")

@@ -28,10 +28,6 @@ APlataformaMovel::APlataformaMovel()
 	Comp_Audio->SetupAttachment(RootComponent);
 	Comp_Audio->bAutoActivate = false;
 	Comp_Audio->bOverrideAttenuation = true;
-	FSoundAttenuationSettings AttenuationSettings;
-	AttenuationSettings.AttenuationShapeExtents = FVector(0.f, 600.f, 0.f);
-	AttenuationSettings.FalloffDistance = 900.f;
-	Comp_Audio->AdjustAttenuation(AttenuationSettings);
 }
 
 void APlataformaMovel::BeginPlay()

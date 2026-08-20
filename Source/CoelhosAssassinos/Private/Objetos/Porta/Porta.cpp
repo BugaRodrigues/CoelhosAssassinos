@@ -27,18 +27,13 @@ APorta::APorta()
 	Comp_Audio->SetupAttachment(RootComponent);
 	Comp_Audio->bAutoActivate = false;
 	Comp_Audio->bOverrideAttenuation = true;
-	FSoundAttenuationSettings AttenuationSettings;
-	AttenuationSettings.AttenuationShapeExtents = FVector(0.f, 600.f, 0.f);
-	AttenuationSettings.FalloffDistance = 1200.f;
-	Comp_Audio->AdjustAttenuation(AttenuationSettings);
 }
 
 void APorta::BeginPlay()
 {
 	Super::BeginPlay();
 
-	Comp_Audio->SetSound(SB_BaseFechado);
-	Comp_Audio->Play();
+	PlaySound(SB_BaseFechado);
 
 	#pragma region Get Save Game
 		GameInstance = Cast<UMain_Game_Instance>(GetGameInstance());
@@ -67,7 +62,7 @@ void APorta::BeginPlay()
 
 void APorta::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	UGameplayStatics::PlaySound2D(GetWorld(), SB_Entrar);
+	PlaySound(SB_Entrar);
 
 	if (!SaveGameInterface) UE_LOG(LogTemp, Error, TEXT("SaveGameInterface is null"));
 
@@ -92,14 +87,23 @@ void APorta::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherAc
 
 void APorta::OpenDoor()
 {
-	UGameplayStatics::PlaySound2D(GetWorld(), SB_Abriu);
+	PlaySound(SB_Abriu);
 
 	bIsOpen = true;
 
 	if (Sprite_Open) Comp_Sprite->SetSprite(Sprite_Open);
 
-	GetWorldTimerManager().SetTimerForNextTick([this] () { Comp_Audio->SetSound(SB_BaseFechado); Comp_Audio->Play(); });
+	GetWorldTimerManager().SetTimerForNextTick([this] () { PlaySound(SB_BaseFechado); });
 }
+
+void APorta::PlaySound(USoundBase* Sound)
+{
+	if (!Sound || !Comp_Audio) return;
+
+	Comp_Audio->SetSound(Sound);
+	Comp_Audio->Play();
+}
+
 
 void APorta::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {

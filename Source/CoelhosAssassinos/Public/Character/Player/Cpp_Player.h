@@ -78,9 +78,6 @@ class COELHOSASSASSINOS_API ACpp_Player : public APaperCharacter
 			TSubclassOf<class UMenuPause> MenuPauseClass;
 
 			UPROPERTY(EditAnywhere, Category = "Sound")
-			TObjectPtr<USoundBase> SB_Run;
-
-			UPROPERTY(EditAnywhere, Category = "Sound")
 			TObjectPtr<USoundBase> SB_Jump;
 
 			UPROPERTY(EditAnywhere, Category = "Sound")
@@ -109,6 +106,8 @@ class COELHOSASSASSINOS_API ACpp_Player : public APaperCharacter
 
 			UPROPERTY()
 			TObjectPtr<class UMenuPause> MenuPause;
+
+			bool bCanJump;
 
 			struct FTimerHandle TH_TomouDano;
 			struct FTimerHandle TH_ReiniciarMapa;

@@ -1,6 +1,6 @@
 #include "Widgets/Menu/Options/MenuOptions.h"
 #include "Components/WidgetSwitcher.h"
-#include "Kismet\GameplayStatics.h"
+#include "Kismet/GameplayStatics.h"
 #include "Components/Button.h"
 
 void UMenuOptions::NativeConstruct()

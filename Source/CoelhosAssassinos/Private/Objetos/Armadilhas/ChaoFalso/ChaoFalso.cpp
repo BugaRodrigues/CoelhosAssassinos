@@ -25,10 +25,8 @@ AChaoFalso::AChaoFalso()
 	Comp_Audio->SetupAttachment(RootComponent);
 	Comp_Audio->bAutoActivate = false;
 	Comp_Audio->bOverrideAttenuation = true;
-	FSoundAttenuationSettings AttenuationSettings;
-	AttenuationSettings.AttenuationShapeExtents = FVector(0.f, 600.f, 0.f);
-	AttenuationSettings.FalloffDistance = 900.f;
-	Comp_Audio->AdjustAttenuation(AttenuationSettings);
+	Comp_Audio->AttenuationOverrides.AttenuationShapeExtents.X = 300.;
+	Comp_Audio->AttenuationOverrides.FalloffDistance = 500.f;
 }
 
 void AChaoFalso::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -90,7 +88,7 @@ void AChaoFalso::Construct()
 
 void AChaoFalso::PlaySound(USoundBase* Sound)
 {
-	if (!Sound) return;
+	if (!Sound || !Comp_Audio) return;
 
 	Comp_Audio->SetSound(Sound);
 	Comp_Audio->Play();

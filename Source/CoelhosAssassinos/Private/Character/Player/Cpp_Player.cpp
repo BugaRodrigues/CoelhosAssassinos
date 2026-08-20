@@ -19,6 +19,7 @@ ACpp_Player::ACpp_Player()
 	PrimaryActorTick.bCanEverTick = false;
 
 	Dano = 10.f;
+	bCanJump = true;
 
 	SetRootComponent(GetCapsuleComponent());
 	
@@ -172,7 +173,13 @@ void ACpp_Player::Landed(const FHitResult& Hit)
 
 	if (Hit.GetActor())
 	{
-		if (!Hit.GetActor()->ActorHasTag("Inimigo")) { PlaySound(SB_Land); return; }
+		bCanJump = true;
+
+		if (!Hit.GetActor()->ActorHasTag("Inimigo")) 
+		{ 
+			PlaySound(SB_Land);
+			return; 
+		}
 
 		PlaySound(SB_LandOnEnemy);
 
@@ -184,8 +191,6 @@ void ACpp_Player::Landed(const FHitResult& Hit)
 
 void ACpp_Player::Move(const FInputActionValue& Value)
 {
-	PlaySound(SB_Run);
-
 	float MoveForce = Value.Get<float>();
 
 	AddMovementInput(FVector(0.f, 1.f, 0.f), MoveForce);
@@ -193,9 +198,21 @@ void ACpp_Player::Move(const FInputActionValue& Value)
 	GetSprite()->SetRelativeRotation(FRotator(0.f, MoveForce > 0.f ? 0.f : 180.f, 0.f));
 }
 
-void ACpp_Player::StartJump() { Jump(); PlaySound(SB_Jump); }
+void ACpp_Player::StartJump()
+{
+	if (!bCanJump) return;
 
-void ACpp_Player::StopJump() { StopJumping(); }
+	bCanJump = false;
+
+	Jump();
+
+	PlaySound(SB_Jump);
+}
+
+void ACpp_Player::StopJump()
+{
+	StopJumping();
+}
 
 void ACpp_Player::AddMappingContext(bool AddOrRemove)
 {

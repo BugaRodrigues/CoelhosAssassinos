@@ -17,7 +17,7 @@ class COELHOSASSASSINOS_API ATrampolim : public AActor
 			//virtual void Tick(float DeltaTime) override;
 
 		private:
-			//virtual void BeginPlay() override;
+			virtual void BeginPlay() override;
 
 			UFUNCTION()
 			void OnJumpAreaOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
