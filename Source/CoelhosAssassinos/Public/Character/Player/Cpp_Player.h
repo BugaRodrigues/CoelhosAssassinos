@@ -99,7 +99,7 @@ class COELHOSASSASSINOS_API ACpp_Player : public APaperCharacter
 			TObjectPtr<class UMaterialInstanceDynamic> Mat_Inst_Dynamic;
 
 			UPROPERTY()
-			TObjectPtr<class UGame_Save> SaveData;
+			TObjectPtr<class UGame_Save> GameData;
 
 			UPROPERTY()
 			TObjectPtr<class UContadorDeVida> ContadorVida;

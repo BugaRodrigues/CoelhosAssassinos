@@ -1,4 +1,7 @@
 #include "Widgets/Menu/Options/Audio/Audio_Settings.h"
+#include "GameInstance/Main_Game_Instance.h"
+#include "Kismet/GameplayStatics.h" 
+#include "Components/TextBlock.h"
 #include "Components/CheckBox.h"
 #include "Components/Slider.h"
 
@@ -6,154 +9,178 @@ void UAudio_Settings::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	#pragma region Sliders
-		Slider_Music->OnValueChanged.AddDynamic(this, &UAudio_Settings::OnMusicValueChange);
-		Slider_Music->SetValue(VolumeMusic);
-
-		Slider_Actors->OnValueChanged.AddDynamic(this, &UAudio_Settings::OnActorsValueChange);
-		Slider_Actors->SetValue(VolumeActors);
-
-		Slider_Effects->OnValueChanged.AddDynamic(this, &UAudio_Settings::OnEffectsValueChange);
-		Slider_Effects->SetValue(VolumeEffects);
+	#pragma region Save Game
+		GameInstance = Cast<UMain_Game_Instance>(GetGameInstance());
+		if (GameInstance)
+		{
+			Interface_SaveSettings = Cast<IInterface_SaveSettings>(GameInstance);
+			if (Interface_SaveSettings)
+			{
+				SettingsData = Interface_SaveSettings->GetSettingsData();
+			}
+			else
+			{
+				UE_LOG(LogTemp, Error, TEXT("Interface nao encontrada!!!"));
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("Game Instance nao encontrada!!!"));
+		}
 	#pragma endregion
 
-	#pragma region Check Box
-		CB_Music->OnCheckStateChanged.AddDynamic(this, &UAudio_Settings::OnMusicMuteChange);
-		CB_Music->SetCheckedState(bIsMuteMusic ? ECheckBoxState::Checked : ECheckBoxState::Unchecked);
+	Slider_Music->OnValueChanged.AddDynamic(this, &UAudio_Settings::OnMusicValueChange);
+	Slider_Actors->OnValueChanged.AddDynamic(this, &UAudio_Settings::OnActorsValueChange);
+	Slider_Effects->OnValueChanged.AddDynamic(this, &UAudio_Settings::OnEffectsValueChange);
 
-		CB_Actors->OnCheckStateChanged.AddDynamic(this, &UAudio_Settings::OnActorsMuteChange);
-		CB_Actors->SetCheckedState(bIsMuteActors ? ECheckBoxState::Checked : ECheckBoxState::Unchecked);
+	CB_MuteAll->OnCheckStateChanged.AddDynamic(this, &UAudio_Settings::OnMuteAllChange);
+	CB_Music->OnCheckStateChanged.AddDynamic(this, &UAudio_Settings::OnMusicMuteChange);
+	CB_Actors->OnCheckStateChanged.AddDynamic(this, &UAudio_Settings::OnActorsMuteChange);
+	CB_Effects->OnCheckStateChanged.AddDynamic(this, &UAudio_Settings::OnEffectsMuteChange);
 
-		CB_Effects->OnCheckStateChanged.AddDynamic(this, &UAudio_Settings::OnEffectsMuteChange);
-		CB_Effects->SetCheckedState(bIsMuteEffects ? ECheckBoxState::Checked : ECheckBoxState::Unchecked);
+	FAudioSave Audio = SettingsData->Audio;
 
-		CB_MuteAll->OnCheckStateChanged.AddDynamic(this, &UAudio_Settings::OnMuteAllChange);
-		CB_MuteAll->SetCheckedState(bIsMuteAll ? ECheckBoxState::Checked : ECheckBoxState::Unchecked);
-	#pragma endregion
+	Slider_Music->SetValue(Audio.Volume_Music);
+	Slider_Actors->SetValue(Audio.Volume_Actors);
+	Slider_Effects->SetValue(Audio.Volume_Effects);
+
+	if (Audio.bIsMutedAll)
+	{
+		CB_MuteAll->SetCheckedState(ECheckBoxState::Checked);
+		OnMuteAllChange(Audio.bIsMutedAll);
+	}
+	else
+	{
+		CB_MuteAll->SetCheckedState(ECheckBoxState::Unchecked);
+		OnMusicMuteChange(Audio.bMusicIsMuted);
+		OnActorsMuteChange(Audio.bActorsIsMuted);
+		OnEffectsMuteChange(Audio.bEffectsIsMuted);
+	}
 }
 
 void UAudio_Settings::OnMusicValueChange(float NewValue)
 {
 	Slider_Music->SetValue(NewValue);
 
-	VolumeMusic = NewValue;
+	TB_MusicVolume->SetText(FText::FromString(FString::Printf(TEXT("%.0f%%"), NewValue)));
+
+	UGameplayStatics::SetSoundMixClassOverride(this, SM_Target, SC_Music, NewValue);
+
+	SettingsData->Audio.Volume_Music = NewValue;
 }
 
 void UAudio_Settings::OnMusicMuteChange(bool bIsChecked)
 {
-	if (bIsChecked)
+	if (SettingsData->Audio.bIsMutedAll && !bIsChecked)
 	{
-		CB_Music->SetCheckedState(ECheckBoxState::Checked);
-
-		Slider_Music->SetIsEnabled(false);
-
-		VolumeMusic = 0.f;
+		SettingsData->Audio.bIsMutedAll = false;
+		CB_MuteAll->SetCheckedState(ECheckBoxState::Unchecked);
 	}
-	else
+
+	UGameplayStatics::SetSoundMixClassOverride(this, SM_Target, SC_Actors, (bIsChecked) ? Slider_Music->GetValue() : 0.f);
+	SettingsData->Audio.bMusicIsMuted = bIsChecked;
+
+	ActiveDesactveSound(Slider_Music, TB_MusicVolume, CB_Music, bIsChecked);
+
+	if (CB_Music->IsChecked() && CB_Actors->IsChecked() && CB_Effects->IsChecked())
 	{
-		CB_Music->SetCheckedState(ECheckBoxState::Unchecked);
-
-		Slider_Music->SetIsEnabled(true);
-
-		VolumeMusic = Slider_Music->GetValue();
+		SettingsData->Audio.bIsMutedAll = true;
+		CB_MuteAll->SetCheckedState(ECheckBoxState::Checked);
 	}
-	bIsMuteMusic = bIsChecked;
 }
 
 void UAudio_Settings::OnActorsValueChange(float NewValue)
 {
 	Slider_Actors->SetValue(NewValue);
 
-	VolumeActors = NewValue;
+	TB_ActorsVolume->SetText(FText::FromString(FString::Printf(TEXT("%.0f%%"), NewValue)));
+
+	UGameplayStatics::SetSoundMixClassOverride(this, SM_Target, SC_Actors, NewValue);
+
+	SettingsData->Audio.Volume_Actors = NewValue;
 }
 
 void UAudio_Settings::OnActorsMuteChange(bool bIsChecked)
 {
-	if (bIsChecked)
+	if (SettingsData->Audio.bIsMutedAll && !bIsChecked)
 	{
-		CB_Actors->SetCheckedState(ECheckBoxState::Checked);
-
-		Slider_Actors->SetIsEnabled(false);
-
-		VolumeActors = 0.f;
+		SettingsData->Audio.bIsMutedAll = false;
+		CB_MuteAll->SetCheckedState(ECheckBoxState::Unchecked);
 	}
-	else
+
+	UGameplayStatics::SetSoundMixClassOverride(this, SM_Target, SC_Actors, (bIsChecked) ? Slider_Actors->GetValue() : 0.f);
+	SettingsData->Audio.bActorsIsMuted = bIsChecked;
+
+	ActiveDesactveSound(Slider_Actors, TB_ActorsVolume, CB_Actors, bIsChecked);
+
+	if (CB_Music->IsChecked() && CB_Actors->IsChecked() && CB_Effects->IsChecked())
 	{
-		CB_Actors->SetCheckedState(ECheckBoxState::Unchecked);
-
-		Slider_Actors->SetIsEnabled(true);
-
-		VolumeEffects = Slider_Effects->GetValue();
+		SettingsData->Audio.bIsMutedAll = true;
+		CB_MuteAll->SetCheckedState(ECheckBoxState::Checked);
 	}
-	bIsMuteActors = bIsChecked;
 }
 
 void UAudio_Settings::OnEffectsValueChange(float NewValue)
 {
 	Slider_Effects->SetValue(NewValue);
 
-	VolumeEffects = NewValue;
+	TB_EffectsVolume->SetText(FText::FromString(FString::Printf(TEXT("%.0f%%"), NewValue)));
+
+	UGameplayStatics::SetSoundMixClassOverride(this, SM_Target, SC_Effects, NewValue);
+
+	SettingsData->Audio.Volume_Effects = NewValue;
 }
 
 void UAudio_Settings::OnEffectsMuteChange(bool bIsChecked)
 {
-	if (bIsChecked)
+	if (SettingsData->Audio.bIsMutedAll && !bIsChecked)
 	{
-		CB_Effects->SetCheckedState(ECheckBoxState::Checked);
-
-		Slider_Effects->SetIsEnabled(false);
-
-		VolumeEffects = 0.f;
+		SettingsData->Audio.bIsMutedAll = false;
+		CB_MuteAll->SetCheckedState(ECheckBoxState::Unchecked);
 	}
-	else
+
+	UGameplayStatics::SetSoundMixClassOverride(this, SM_Target, SC_Actors, (bIsChecked) ? Slider_Effects->GetValue() : 0.f);
+	SettingsData->Audio.bEffectsIsMuted = bIsChecked;
+
+	ActiveDesactveSound(Slider_Effects, TB_EffectsVolume, CB_Effects, bIsChecked);
+
+	if (CB_Music->IsChecked() && CB_Actors->IsChecked() && CB_Effects->IsChecked())
 	{
-		CB_Effects->SetCheckedState(ECheckBoxState::Unchecked);
-
-		Slider_Effects->SetIsEnabled(true);
-
-		VolumeEffects = Slider_Effects->GetValue();
+		SettingsData->Audio.bIsMutedAll = true;
+		CB_MuteAll->SetCheckedState(ECheckBoxState::Checked);
 	}
-	bIsMuteEffects = bIsChecked;
 }
 
 void UAudio_Settings::OnMuteAllChange(bool bIsChecked)
 {
-	if (bIsChecked)
+	SettingsData->Audio.bIsMutedAll = bIsChecked;
+
+	OnMusicMuteChange(bIsChecked);
+	OnActorsMuteChange(bIsChecked);
+	OnEffectsMuteChange(bIsChecked);
+}
+
+void UAudio_Settings::ActiveDesactveSound(USlider* Slider, UTextBlock* Text, UCheckBox* Check, bool bIsOn)
+{
+	if (bIsOn)
 	{
-		CB_MuteAll->SetCheckedState(ECheckBoxState::Checked);
-		CB_Music->SetCheckedState(ECheckBoxState::Checked);
-		CB_Actors->SetCheckedState(ECheckBoxState::Checked);
-		CB_Effects->SetCheckedState(ECheckBoxState::Checked);
-
-		Slider_Music->SetIsEnabled(false);
-		Slider_Actors->SetIsEnabled(false);
-		Slider_Effects->SetIsEnabled(false);
-
-		VolumeMusic = 0.f;
-		VolumeActors = 0.f;
-		VolumeEffects = 0.f;
+		Check->SetCheckedState(ECheckBoxState::Checked);
+		Slider->SetIsEnabled(false);
+		Text->SetIsEnabled(false);
 	}
 	else
 	{
-		CB_MuteAll->SetCheckedState(ECheckBoxState::Unchecked);
-		CB_Music->SetCheckedState(ECheckBoxState::Unchecked);
-		CB_Actors->SetCheckedState(ECheckBoxState::Unchecked);
-		CB_Effects->SetCheckedState(ECheckBoxState::Unchecked);
-
-		Slider_Music->SetIsEnabled(true);
-		Slider_Actors->SetIsEnabled(true);
-		Slider_Effects->SetIsEnabled(true);
-
-		VolumeMusic = Slider_Music->GetValue();
-		VolumeActors = Slider_Actors->GetValue();
-		VolumeEffects = Slider_Effects->GetValue();
+		Check->SetCheckedState(ECheckBoxState::Unchecked);
+		Slider->SetIsEnabled(true);
+		Text->SetIsEnabled(true);
 	}
-	bIsMuteAll = bIsChecked;
 }
 
 void UAudio_Settings::NativeDestruct()
 {
 	Super::NativeDestruct();
+
+	if (GameInstance && Interface_SaveSettings) Interface_SaveSettings->SaveSettings(false, SettingsData);
 
 	Slider_Music->OnValueChanged.RemoveAll(this);
 	Slider_Actors->OnValueChanged.RemoveAll(this);

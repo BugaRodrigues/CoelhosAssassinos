@@ -37,6 +37,8 @@ class COELHOSASSASSINOS_API UAudio_Settings : public UUserWidget
 			UFUNCTION()
 			void OnMuteAllChange(bool bIsChecked);
 
+			void ActiveDesactveSound(class USlider* Slider, class UTextBlock* Text, class UCheckBox* Check, bool bIsOn);
+
 			virtual void NativeDestruct() override;
 
 	#pragma endregion
@@ -53,10 +55,16 @@ class COELHOSASSASSINOS_API UAudio_Settings : public UUserWidget
 			TObjectPtr<class UCheckBox> CB_Music;
 
 			UPROPERTY(meta = (BindWidget))
+			TObjectPtr<class UTextBlock> TB_MusicVolume;
+
+			UPROPERTY(meta = (BindWidget))
 			TObjectPtr<class USlider> Slider_Actors;
 
 			UPROPERTY(meta = (BindWidget))
 			TObjectPtr<class UCheckBox> CB_Actors;
+
+			UPROPERTY(meta = (BindWidget))
+			TObjectPtr<class UTextBlock> TB_ActorsVolume;
 
 			UPROPERTY(meta = (BindWidget))
 			TObjectPtr<class USlider> Slider_Effects;
@@ -65,16 +73,29 @@ class COELHOSASSASSINOS_API UAudio_Settings : public UUserWidget
 			TObjectPtr<class UCheckBox> CB_Effects;
 
 			UPROPERTY(meta = (BindWidget))
+			TObjectPtr<class UTextBlock> TB_EffectsVolume;
+
+			UPROPERTY(meta = (BindWidget))
 			TObjectPtr<class UCheckBox> CB_MuteAll;
 
-			bool bIsMuteMusic = false;
-			bool bIsMuteActors = false;
-			bool bIsMuteEffects = false;
-			bool bIsMuteAll = false;
+			UPROPERTY(EditAnywhere, Category = "Sound | Mix")
+			TObjectPtr<class USoundMix> SM_Target;
 
-			float VolumeMusic = 100.f;
-			float VolumeActors = 100.f;
-			float VolumeEffects = 100.f;
+			UPROPERTY(EditAnywhere, Category = "Sound | Class")
+			TObjectPtr<class USoundClass> SC_Music;
+
+			UPROPERTY(EditAnywhere, Category = "Sound | Class")
+			TObjectPtr<class USoundClass> SC_Actors;
+
+			UPROPERTY(EditAnywhere, Category = "Sound | Class")
+			TObjectPtr<class USoundClass> SC_Effects;
+
+			UPROPERTY()
+			TObjectPtr<class USettings_Save> SettingsData;
+
+			TObjectPtr<class UMain_Game_Instance> GameInstance;
+
+			TObjectPtr<class IInterface_SaveSettings> Interface_SaveSettings;
 
 	#pragma endregion
 };

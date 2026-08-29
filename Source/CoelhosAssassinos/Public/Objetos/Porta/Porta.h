@@ -67,7 +67,7 @@ class COELHOSASSASSINOS_API APorta : public AActor
 			TObjectPtr<class AMainGameMode> GameMode;
 
 			UPROPERTY()
-			TObjectPtr<class UGame_Save> SaveData;
+			TObjectPtr<class UGame_Save> GameData;
 
 			bool bIsOpen;
 

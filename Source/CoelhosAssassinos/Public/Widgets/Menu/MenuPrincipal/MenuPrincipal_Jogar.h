@@ -52,7 +52,7 @@ class COELHOSASSASSINOS_API UMenuPrincipal_Jogar : public UUserWidget
 			TObjectPtr<USoundBase> SB_Click;
 
 			UPROPERTY()
-			TObjectPtr<class UGame_Save> SaveData;
+			TObjectPtr<class UGame_Save> GameData;
 
 			TObjectPtr<class IInterface_SaveGame> GameSave_Interface;
 

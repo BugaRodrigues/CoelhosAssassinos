@@ -19,7 +19,7 @@ void UMenuPrincipal_Jogar::NativeConstruct()
 
 	if (!GameSave_Interface) { UE_LOG(LogTemp, Error, TEXT("GameSave_Interface or GameInstance is null. (Menu Principal Init)")); return; }
 
-	SaveData = GameSave_Interface->GetSaveData();
+	GameData = GameSave_Interface->GetGameData();
 
 	BTN_NewGame->OnClicked.AddDynamic(this, &UMenuPrincipal_Jogar::OnClicked_BTN_NewGame);
 	BTN_Continuar->OnClicked.AddDynamic(this, &UMenuPrincipal_Jogar::OnClicked_BTN_Continuar);
@@ -43,15 +43,15 @@ void UMenuPrincipal_Jogar::OnClicked_BTN_NewGame()
 
 	if (GameSave_Interface)
 	{
-		SaveData = NewObject<UGame_Save>();
+		GameData = NewObject<UGame_Save>();
 
 		if (IsValid(GameInstance))
 		{ 
-			GameSave_Interface->SaveGame(true, SaveData);
+			GameSave_Interface->SaveGame(true, GameData);
 		}
 		else
 		{
-			GameSave_Interface->SaveGame(false, SaveData);
+			GameSave_Interface->SaveGame(false, GameData);
 
 			OnSaveGameComplete();
 		}
@@ -66,13 +66,13 @@ void UMenuPrincipal_Jogar::OnClicked_BTN_Continuar()
 {
 	PlaySound(SB_Click);
 
-	if (GameSave_Interface && SaveData)
+	if (GameSave_Interface && GameData)
 	{
-		UGameplayStatics::OpenLevel(this, SaveData->MapaName);
+		UGameplayStatics::OpenLevel(this, GameData->MapaName);
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("GameSave_Interface or SaveData is null. (Menu Principal Continue)"));
+		UE_LOG(LogTemp, Error, TEXT("GameSave_Interface or GameData is null. (Menu Principal Continue)"));
 	}
 }
 
@@ -92,7 +92,7 @@ void UMenuPrincipal_Jogar::OnClicked_BTN_Voltar()
 
 void UMenuPrincipal_Jogar::OnSaveGameComplete()
 {
-	UGameplayStatics::OpenLevel(this, SaveData->MapaName);
+	UGameplayStatics::OpenLevel(this, GameData->MapaName);
 }
 
 void UMenuPrincipal_Jogar::PlaySound(USoundBase* Sound)

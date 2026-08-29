@@ -45,7 +45,7 @@ void APorta::BeginPlay()
 
 		if (!SaveGameInterface) { UE_LOG(LogTemp, Error, TEXT("SaveGameInterface or GameInstance is null. (Porta Init)")); return; }
 
-		SaveData = SaveGameInterface->GetSaveData();
+		GameData = SaveGameInterface->GetGameData();
 	#pragma endregion
 
 	if (Sprite_Closed) Comp_Sprite->SetSprite(Sprite_Closed);
@@ -72,11 +72,11 @@ void APorta::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherAc
 
 	if (!OtherActor->ActorHasTag(FName("Player"))) return;
 
-	SaveData->MapaName = FName(*NextLevel.GetAssetName());
+	GameData->MapaName = FName(*NextLevel.GetAssetName());
 
 	if (IsValid(GameInstance))
 	{
-		SaveGameInterface->SaveGame(true, SaveData);
+		SaveGameInterface->SaveGame(true, GameData);
 
 		GameInstance->OnSaveGameComplete.BindLambda([this]()
 		{

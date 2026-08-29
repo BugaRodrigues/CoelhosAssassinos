@@ -48,8 +48,8 @@ void ACpp_Player::BeginPlay()
 
 		if (SaveGameInterface) 
 		{ 
-			SaveData = SaveGameInterface->GetSaveData();
-			Vida = SaveData->Vida;
+			GameData = SaveGameInterface->GetGameData();
+			Vida = GameData->Vida;
 		}
 		else
 		{
@@ -106,8 +106,8 @@ float ACpp_Player::TakeDamage(float DamageAmount, FDamageEvent const& DamageEven
 	
 	GetWorldTimerManager().SetTimer(TH_ReiniciarMapa, this, &ACpp_Player::ReiniciarMapa, TempoDeQueda, false);
 
-	SaveData->Vida = Vida;
-	SaveGameInterface->SaveGame(true, SaveData);
+	GameData->Vida = Vida;
+	SaveGameInterface->SaveGame(true, GameData);
 
 	ContadorVida->SetVida(Vida);
 
@@ -133,16 +133,16 @@ float ACpp_Player::TakeDamage(float DamageAmount, FDamageEvent const& DamageEven
 
 void ACpp_Player::ReiniciarMapa()
 {
-	if (SaveData->Vida <= 0)
+	if (GameData->Vida <= 0)
 	{
 		PlaySound(SB_LoseAll);
 
 		AddOrRemoveWidgetToViewport(false);
 
-		SaveData = NewObject<UGame_Save>();
+		GameData = NewObject<UGame_Save>();
 		if (GameInstance)
 		{
-			SaveGameInterface->SaveGame(true, SaveData);
+			SaveGameInterface->SaveGame(true, GameData);
 
 			TWeakObjectPtr<ACpp_Player> WeakThis(this);
 			GameInstance->OnSaveGameComplete.BindLambda([WeakThis]
@@ -154,7 +154,7 @@ void ACpp_Player::ReiniciarMapa()
 		}
 		else
 		{
-			SaveGameInterface->SaveGame(false, SaveData);
+			SaveGameInterface->SaveGame(false, GameData);
 
 			AddMenuPauseToViewport();
 		}
