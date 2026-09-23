@@ -12,10 +12,9 @@ class COELHOSASSASSINOS_API UAudio_Settings : public UUserWidget
 	#pragma region Functions
 
 		public:
+			void Init();
 
 		protected:
-			virtual void NativeConstruct() override;
-
 			UFUNCTION()
 			void OnMusicValueChange(float NewValue);
 

@@ -214,17 +214,20 @@ void ACpp_Player::StopJump()
 	StopJumping();
 }
 
-void ACpp_Player::AddMappingContext(bool AddOrRemove)
+void ACpp_Player::AddMappingContext(bool bAddOrRemove)
 {
+	if (!MappingContext) return;
+
 	APlayerController* PC = Cast<APlayerController>(Controller);
 	if (!PC) return;
 
 	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer());
 	if (!Subsystem) return;
 
-	if (!MappingContext) return;
+	FModifyContextOptions Options;
+	Options.bNotifyUserSettings = true;
 
-	AddOrRemove ? Subsystem->AddMappingContext(MappingContext, 0) : Subsystem->RemoveMappingContext(MappingContext);
+	bAddOrRemove ? Subsystem->AddMappingContext(MappingContext, 0, Options) : Subsystem->RemoveMappingContext(MappingContext);
 }
 
 void ACpp_Player::CreateDynamicMaterial()

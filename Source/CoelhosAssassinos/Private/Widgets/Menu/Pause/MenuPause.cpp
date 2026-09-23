@@ -29,6 +29,23 @@ void UMenuPause::NativeConstruct()
 	WS_Menu->SetActiveWidgetIndex(0);
 }
 
+void UMenuPause::OnClicked_BTN_Continuar()
+{
+	UGameplayStatics::SetGamePaused(GetWorld(), false);
+
+	RemoveFromParent();
+}
+
+void UMenuPause::OnClicked_BTN_Opcoes()
+{
+	WS_Menu->SetActiveWidgetIndex(1);
+}
+
+void UMenuPause::OnClicked_BTN_Sair()
+{
+	UGameplayStatics::OpenLevel(GetWorld(), FName("Map_MainMenu"));
+}
+
 void UMenuPause::NativeDestruct()
 {
 	Super::NativeDestruct();
@@ -45,34 +62,4 @@ void UMenuPause::NativeDestruct()
 	BTN_Continuar->OnClicked.RemoveDynamic(this, &UMenuPause::OnClicked_BTN_Continuar);
 	BTN_Opcoes->OnClicked.RemoveDynamic(this, &UMenuPause::OnClicked_BTN_Opcoes);
 	BTN_Sair->OnClicked.RemoveDynamic(this, &UMenuPause::OnClicked_BTN_Sair);
-}
-
-void UMenuPause::OnClicked_BTN_Continuar()
-{
-	PlaySound(SB_Click);
-
-	UGameplayStatics::SetGamePaused(GetWorld(), false);
-
-	RemoveFromParent();
-}
-
-void UMenuPause::OnClicked_BTN_Opcoes()
-{
-	PlaySound(SB_Click);
-
-	WS_Menu->SetActiveWidgetIndex(1);
-}
-
-void UMenuPause::OnClicked_BTN_Sair()
-{
-	PlaySound(SB_Click);
-
-	UGameplayStatics::OpenLevel(GetWorld(), FName("Map_MainMenu"));
-}
-
-void UMenuPause::PlaySound(USoundBase* Sound)
-{
-	if (!Sound) return;
-
-	UGameplayStatics::PlaySound2D(GetWorld(), Sound);
 }

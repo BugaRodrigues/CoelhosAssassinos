@@ -4,9 +4,9 @@
 #include "Kismet/GameplayStatics.h"
 #include "Components/Button.h"
 
-void UMenuPrincipal_Jogar::NativeConstruct()
+void UMenuPrincipal_Jogar::Init()
 {
-	Super::NativeConstruct();
+	SetIsEnabled(true);
 
 	GameInstance = Cast<UMain_Game_Instance>(GetGameInstance());
 
@@ -17,7 +17,7 @@ void UMenuPrincipal_Jogar::NativeConstruct()
 		GameSave_Interface = Cast<IInterface_SaveGame>(GetGameInstance());
 	}
 
-	if (!GameSave_Interface) { UE_LOG(LogTemp, Error, TEXT("GameSave_Interface or GameInstance is null. (Menu Principal Init)")); return; }
+	if (!GameSave_Interface) return;
 
 	GameData = GameSave_Interface->GetGameData();
 
@@ -26,21 +26,9 @@ void UMenuPrincipal_Jogar::NativeConstruct()
 	BTN_Voltar->OnClicked.AddDynamic(this, &UMenuPrincipal_Jogar::OnClicked_BTN_Voltar);
 }
 
-void UMenuPrincipal_Jogar::NativeDestruct()
-{
-	Super::NativeDestruct();
-
-	BTN_NewGame->OnClicked.RemoveDynamic(this, &UMenuPrincipal_Jogar::OnClicked_BTN_NewGame);
-	BTN_Continuar->OnClicked.RemoveDynamic(this, &UMenuPrincipal_Jogar::OnClicked_BTN_Continuar);
-	BTN_Voltar->OnClicked.RemoveDynamic(this, &UMenuPrincipal_Jogar::OnClicked_BTN_Voltar);
-
-	if (IsValid(GameInstance)) GameInstance->OnSaveGameComplete.Unbind();
-}
 
 void UMenuPrincipal_Jogar::OnClicked_BTN_NewGame()
 {
-	PlaySound(SB_Click);
-
 	if (GameSave_Interface)
 	{
 		GameData = NewObject<UGame_Save>();
@@ -64,8 +52,6 @@ void UMenuPrincipal_Jogar::OnClicked_BTN_NewGame()
 
 void UMenuPrincipal_Jogar::OnClicked_BTN_Continuar()
 {
-	PlaySound(SB_Click);
-
 	if (GameSave_Interface && GameData)
 	{
 		UGameplayStatics::OpenLevel(this, GameData->MapaName);
@@ -78,11 +64,10 @@ void UMenuPrincipal_Jogar::OnClicked_BTN_Continuar()
 
 void UMenuPrincipal_Jogar::OnClicked_BTN_Voltar()
 {
-	PlaySound(SB_Click);
-
 	if (UWidgetSwitcher* WS_Menu = Cast<UWidgetSwitcher>(GetParent()))
 	{
 		WS_Menu->SetActiveWidgetIndex(0);
+		WS_Menu->GetActiveWidget()->SetIsEnabled(true);
 	}
 	else
 	{
@@ -95,9 +80,13 @@ void UMenuPrincipal_Jogar::OnSaveGameComplete()
 	UGameplayStatics::OpenLevel(this, GameData->MapaName);
 }
 
-void UMenuPrincipal_Jogar::PlaySound(USoundBase* Sound)
+void UMenuPrincipal_Jogar::NativeDestruct()
 {
-	if (!Sound) return;
+	Super::NativeDestruct();
 
-	UGameplayStatics::PlaySound2D(GetWorld(), Sound);
+	BTN_NewGame->OnClicked.RemoveDynamic(this, &UMenuPrincipal_Jogar::OnClicked_BTN_NewGame);
+	BTN_Continuar->OnClicked.RemoveDynamic(this, &UMenuPrincipal_Jogar::OnClicked_BTN_Continuar);
+	BTN_Voltar->OnClicked.RemoveDynamic(this, &UMenuPrincipal_Jogar::OnClicked_BTN_Voltar);
+
+	if (IsValid(GameInstance)) GameInstance->OnSaveGameComplete.Unbind();
 }

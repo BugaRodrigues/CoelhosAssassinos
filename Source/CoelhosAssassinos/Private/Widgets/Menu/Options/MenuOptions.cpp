@@ -1,56 +1,69 @@
 #include "Widgets/Menu/Options/MenuOptions.h"
+#include "Widgets/Menu/Options/Controll/Controll_Settings.h"
+#include "Widgets/Menu/Options/Audio/Audio_Settings.h"
 #include "Components/WidgetSwitcher.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/Button.h"
 
-void UMenuOptions::NativeConstruct()
+void UMenuOptions::Init()
 {
-	Super::NativeConstruct();
+	SetIsEnabled(true);
+
+	WidgetActive = nullptr;
 
 	BTN_Video->OnClicked.AddDynamic(this, &UMenuOptions::OnClicked_BTN_Video);
 	BTN_Audio->OnClicked.AddDynamic(this, &UMenuOptions::OnClicked_BTN_Audio);
 	BTN_Controls->OnClicked.AddDynamic(this, &UMenuOptions::OnClicked_BTN_Controls);
 	BTN_Voltar->OnClicked.AddDynamic(this, &UMenuOptions::OnClicked_BTN_Voltar);
 
-	WS_MenuOptions->SetActiveWidgetIndex(0);
+	OnClicked_BTN_Video();
 }
 
 void UMenuOptions::OnClicked_BTN_Video()
 {
-	PlaySound(SB_Click);
+	if (IsValid(WidgetActive) && WidgetActive->GetIsEnabled()) WidgetActive->SetIsEnabled(false);
 
 	WS_MenuOptions->SetActiveWidgetIndex(0);
+
+	WidgetActive = WS_MenuOptions->GetActiveWidget();
+	WidgetActive->SetIsEnabled(true);
 }
 
 void UMenuOptions::OnClicked_BTN_Audio()
 {
-	PlaySound(SB_Click);
+	if (IsValid(WidgetActive) && WidgetActive->GetIsEnabled()) WidgetActive->SetIsEnabled(false);
 
 	WS_MenuOptions->SetActiveWidgetIndex(1);
+
+	WidgetActive = WS_MenuOptions->GetActiveWidget();
+	WidgetActive->SetIsEnabled(true);
+
+	if (UAudio_Settings* Audio = Cast<UAudio_Settings>(WS_MenuOptions->GetActiveWidget())) Audio->Init();
 }
 
 void UMenuOptions::OnClicked_BTN_Controls()
 {
-	PlaySound(SB_Click);
+	if (IsValid(WidgetActive) && WidgetActive->GetIsEnabled()) WidgetActive->SetIsEnabled(false);
 
 	WS_MenuOptions->SetActiveWidgetIndex(2);
+
+	WidgetActive = WS_MenuOptions->GetActiveWidget();
+	WidgetActive->SetIsEnabled(true);
+
+	if (UControll_Settings* Control = Cast<UControll_Settings>(WS_MenuOptions->GetActiveWidget())) Control->Init();
 }
 
 void UMenuOptions::OnClicked_BTN_Voltar()
 {
-	PlaySound(SB_Click);
+	if (IsValid(WidgetActive) && WidgetActive->GetIsEnabled()) WidgetActive->SetIsEnabled(false);
 
 	if (UWidgetSwitcher* WS_MenuPrincipal = Cast<UWidgetSwitcher>(GetParent()))
 	{
 		WS_MenuPrincipal->SetActiveWidgetIndex(0);
+		WS_MenuPrincipal->GetActiveWidget()->SetIsEnabled(true);
 	}
-}
 
-void UMenuOptions::PlaySound(USoundBase* Sound)
-{
-	if (!Sound) return;
-
-	UGameplayStatics::PlaySound2D(GetWorld(), Sound);
+	WidgetActive = nullptr;
 }
 
 void UMenuOptions::NativeDestruct()

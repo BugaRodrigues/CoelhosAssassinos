@@ -1,4 +1,6 @@
 #include "Widgets/Menu/MenuPrincipal/MenuPrincipal.h"
+#include "Widgets/Menu/MenuPrincipal/MenuPrincipal_Jogar.h"
+#include "Widgets/Menu/Options/MenuOptions.h"
 #include "GameFramework/PlayerController.h"
 #include "Components/WidgetSwitcher.h"
 #include "Kismet/GameplayStatics.h"
@@ -26,6 +28,35 @@ void UMenuPrincipal::NativeConstruct()
 	WS_Menu->SetActiveWidgetIndex(0);
 }
 
+void UMenuPrincipal::OnClicked_BTN_Jogar()
+{
+	if (IsValid(WidgetActive) && WidgetActive->GetIsEnabled()) WidgetActive->SetIsEnabled(false);
+
+	WS_Menu->SetActiveWidgetIndex(1);
+
+	WidgetActive = WS_Menu->GetActiveWidget();
+	WidgetActive->SetIsEnabled(true);
+
+	if (UMenuPrincipal_Jogar* Jogar = Cast<UMenuPrincipal_Jogar>(WS_Menu->GetActiveWidget())) Jogar->Init();
+}
+
+void UMenuPrincipal::OnClicked_BTN_Opcoes()
+{
+	if (IsValid(WidgetActive) && WidgetActive->GetIsEnabled()) WidgetActive->SetIsEnabled(false);
+
+	WS_Menu->SetActiveWidgetIndex(2);
+
+	WidgetActive = WS_Menu->GetActiveWidget();
+	WidgetActive->SetIsEnabled(true);
+
+	if (UMenuOptions* Options = Cast<UMenuOptions>(WS_Menu->GetActiveWidget())) Options->Init();
+}
+
+void UMenuPrincipal::OnClicked_BTN_Sair()
+{
+	UKismetSystemLibrary::QuitGame(GetWorld(), nullptr, EQuitPreference::Quit, false);
+}
+
 void UMenuPrincipal::NativeDestruct()
 {
 	Super::NativeDestruct();
@@ -42,32 +73,4 @@ void UMenuPrincipal::NativeDestruct()
 
 		PC->SetInputMode(InputMode);
 	}
-}
-
-void UMenuPrincipal::OnClicked_BTN_Jogar()
-{
-	PlaySound(SB_Click);
-
-	WS_Menu->SetActiveWidgetIndex(1);
-}
-
-void UMenuPrincipal::OnClicked_BTN_Opcoes()
-{
-	PlaySound(SB_Click);
-
-	WS_Menu->SetActiveWidgetIndex(2);
-}
-
-void UMenuPrincipal::OnClicked_BTN_Sair()
-{
-	PlaySound(SB_Click);
-
-	UKismetSystemLibrary::QuitGame(GetWorld(), nullptr, EQuitPreference::Quit, false);
-}
-
-void UMenuPrincipal::PlaySound(USoundBase* Sound)
-{
-	if (!Sound) return;
-
-	UGameplayStatics::PlaySound2D(GetWorld(), Sound);
 }

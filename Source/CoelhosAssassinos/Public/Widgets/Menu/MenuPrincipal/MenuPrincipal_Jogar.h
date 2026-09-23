@@ -12,12 +12,9 @@ class COELHOSASSASSINOS_API UMenuPrincipal_Jogar : public UUserWidget
 	#pragma region Functions
 
 		public:
+			void Init();
 
 		protected:
-			virtual void NativeConstruct() override;
-		
-			virtual void NativeDestruct() override;
-
 			UFUNCTION()
 			void OnClicked_BTN_NewGame();
 
@@ -30,7 +27,7 @@ class COELHOSASSASSINOS_API UMenuPrincipal_Jogar : public UUserWidget
 			UFUNCTION()
 			void OnSaveGameComplete();
 
-			void PlaySound(USoundBase* Sound);
+			virtual void NativeDestruct() override;
 
 	#pragma endregion
 
@@ -47,9 +44,6 @@ class COELHOSASSASSINOS_API UMenuPrincipal_Jogar : public UUserWidget
 
 			UPROPERTY(meta = (BindWidget))
 			TObjectPtr<class UButton> BTN_Voltar;
-
-			UPROPERTY(EditAnywhere, Category = "Sound")
-			TObjectPtr<USoundBase> SB_Click;
 
 			UPROPERTY()
 			TObjectPtr<class UGame_Save> GameData;

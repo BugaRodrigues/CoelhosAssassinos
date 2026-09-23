@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "SaveGame/Settings_Save.h"
+#include "System/SaveGame/Settings_Save.h"
 #include "Interface_SaveSettings.generated.h"
 
 UINTERFACE(MinimalAPI)

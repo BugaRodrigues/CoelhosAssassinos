@@ -19,8 +19,9 @@ public class CoelhosAssassinos : ModuleRules
 			"PaperZD",
             "UMG",
 			"AudioMixer",
-			"MetasoundEngine"
-		});
+			"MetasoundEngine",
+            "GameplayTags"
+        });
 
 		PrivateDependencyModuleNames.AddRange(new string[] 
 		{  

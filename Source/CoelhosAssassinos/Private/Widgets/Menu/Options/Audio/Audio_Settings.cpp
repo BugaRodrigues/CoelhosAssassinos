@@ -5,9 +5,9 @@
 #include "Components/CheckBox.h"
 #include "Components/Slider.h"
 
-void UAudio_Settings::NativeConstruct()
+void UAudio_Settings::Init()
 {
-	Super::NativeConstruct();
+	SetIsEnabled(true);
 
 	#pragma region Save Game
 		GameInstance = Cast<UMain_Game_Instance>(GetGameInstance());

@@ -12,12 +12,9 @@ class COELHOSASSASSINOS_API UMenuOptions : public UUserWidget
 	#pragma region Functions
 
 		public:
+			void Init();
 
 		protected:
-			virtual void NativeConstruct() override;
-
-			virtual void NativeDestruct() override;
-
 			UFUNCTION()
 			void OnClicked_BTN_Video();
 
@@ -30,7 +27,7 @@ class COELHOSASSASSINOS_API UMenuOptions : public UUserWidget
 			UFUNCTION()
 			void OnClicked_BTN_Voltar();
 
-			void PlaySound(USoundBase* Sound);
+			virtual void NativeDestruct() override;
 
 	#pragma endregion
 
@@ -54,8 +51,8 @@ class COELHOSASSASSINOS_API UMenuOptions : public UUserWidget
 			UPROPERTY(meta = (BindWidget))
 			TObjectPtr<class UWidgetSwitcher> WS_MenuOptions;
 
-			UPROPERTY(EditAnywhere, Category = "Sound")
-			TObjectPtr<USoundBase> SB_Click;
+			UPROPERTY()
+			UWidget* WidgetActive;
 
 	#pragma endregion
 };

@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "SaveGame/Game_Save.h"
+#include "System/SaveGame/Game_Save.h"
 #include "Interface_SaveGame.generated.h"
 
 UINTERFACE(MinimalAPI)
