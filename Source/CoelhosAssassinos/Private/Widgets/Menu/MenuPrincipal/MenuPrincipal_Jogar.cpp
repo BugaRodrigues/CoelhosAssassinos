@@ -9,17 +9,11 @@ void UMenuPrincipal_Jogar::Init()
 	SetIsEnabled(true);
 
 	GameInstance = Cast<UMain_Game_Instance>(GetGameInstance());
+	if (!GameInstance) return;
 
-	if (IsValid(GameInstance))
-	{
-		GameInstance->OnSaveGameComplete.BindUObject(this, &UMenuPrincipal_Jogar::OnSaveGameComplete);
-	
-		GameSave_Interface = Cast<IInterface_SaveGame>(GetGameInstance());
-	}
+	GameInstance->OnSaveGameComplete.BindUObject(this, &UMenuPrincipal_Jogar::OnSaveGameComplete);
 
-	if (!GameSave_Interface) return;
-
-	GameData = GameSave_Interface->GetGameData();
+	GameData = GameInstance->GetGameData();
 
 	BTN_NewGame->OnClicked.AddDynamic(this, &UMenuPrincipal_Jogar::OnClicked_BTN_NewGame);
 	BTN_Continuar->OnClicked.AddDynamic(this, &UMenuPrincipal_Jogar::OnClicked_BTN_Continuar);
@@ -29,20 +23,14 @@ void UMenuPrincipal_Jogar::Init()
 
 void UMenuPrincipal_Jogar::OnClicked_BTN_NewGame()
 {
-	if (GameSave_Interface)
+	if (IsValid(GameInstance))
 	{
 		GameData = NewObject<UGame_Save>();
 
-		if (IsValid(GameInstance))
-		{ 
-			GameSave_Interface->SaveGame(true, GameData);
-		}
-		else
-		{
-			GameSave_Interface->SaveGame(false, GameData);
+		GameInstance->SaveGame(true, GameData);
+		GameInstance->SaveGame(false, GameData);
 
-			OnSaveGameComplete();
-		}
+		OnSaveGameComplete();
 	}
 	else
 	{
@@ -52,7 +40,7 @@ void UMenuPrincipal_Jogar::OnClicked_BTN_NewGame()
 
 void UMenuPrincipal_Jogar::OnClicked_BTN_Continuar()
 {
-	if (GameSave_Interface && GameData)
+	if (GameInstance && GameData)
 	{
 		UGameplayStatics::OpenLevel(this, GameData->MapaName);
 	}
@@ -77,6 +65,8 @@ void UMenuPrincipal_Jogar::OnClicked_BTN_Voltar()
 
 void UMenuPrincipal_Jogar::OnSaveGameComplete()
 {
+	if (!GameData) return;
+
 	UGameplayStatics::OpenLevel(this, GameData->MapaName);
 }
 

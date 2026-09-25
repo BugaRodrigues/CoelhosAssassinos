@@ -35,36 +35,24 @@ void APorta::BeginPlay()
 
 	PlaySound(SB_BaseFechado);
 
-	#pragma region Get Save Game
-		GameInstance = Cast<UMain_Game_Instance>(GetGameInstance());
+	GameInstance = Cast<UMain_Game_Instance>(GetGameInstance());
+	if (!GameInstance) return;
 
-		if (IsValid(GameInstance))
-		{
-			SaveGameInterface = Cast<IInterface_SaveGame>(GameInstance);
-		}
+	GameData = GameInstance->GetGameData();
 
-		if (!SaveGameInterface) { UE_LOG(LogTemp, Error, TEXT("SaveGameInterface or GameInstance is null. (Porta Init)")); return; }
+	GameMode = Cast<AMainGameMode>(GetWorld()->GetAuthGameMode());
+	if (!GameMode) return;
 
-		GameData = SaveGameInterface->GetGameData();
-	#pragma endregion
+	GameMode->OpenGate.BindUObject(this, &APorta::OpenDoor);
 
 	if (Sprite_Closed) Comp_Sprite->SetSprite(Sprite_Closed);
-
-	#pragma region Get GameMode and Bind Delegate
-		GameMode = Cast<AMainGameMode>(GetWorld()->GetAuthGameMode());
-
-		if (GameMode)
-		{
-			GameMode->OpenGate.BindUObject(this, &APorta::OpenDoor);
-		}
-	#pragma endregion
 }
 
 void APorta::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	PlaySound(SB_Entrar);
 
-	if (!SaveGameInterface) UE_LOG(LogTemp, Error, TEXT("SaveGameInterface is null"));
+	if (!GameInstance) UE_LOG(LogTemp, Error, TEXT("SaveGameInterface is null"));
 
 	if (!bIsOpen) return;
 
@@ -74,9 +62,9 @@ void APorta::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherAc
 
 	GameData->MapaName = FName(*NextLevel.GetAssetName());
 
-	if (IsValid(GameInstance))
+	if (!GameInstance)
 	{
-		SaveGameInterface->SaveGame(true, GameData);
+		GameInstance->SaveGame(true, GameData);
 
 		GameInstance->OnSaveGameComplete.BindLambda([this]()
 		{

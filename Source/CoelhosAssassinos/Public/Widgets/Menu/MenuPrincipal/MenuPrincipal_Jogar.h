@@ -48,8 +48,7 @@ class COELHOSASSASSINOS_API UMenuPrincipal_Jogar : public UUserWidget
 			UPROPERTY()
 			TObjectPtr<class UGame_Save> GameData;
 
-			TObjectPtr<class IInterface_SaveGame> GameSave_Interface;
-
+			UPROPERTY()
 			TObjectPtr<class UMain_Game_Instance> GameInstance;
 
 	#pragma endregion

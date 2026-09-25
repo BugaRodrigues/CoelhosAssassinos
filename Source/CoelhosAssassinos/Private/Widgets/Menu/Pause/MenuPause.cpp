@@ -1,6 +1,5 @@
 #include "Widgets/Menu/Pause/MenuPause.h"
-#include "GameFramework/PlayerController.h"
-#include "Kismet/KismetSystemLibrary.h"
+#include "Character/Controller/Player/Player_Controller.h"
 #include "Components/WidgetSwitcher.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/Button.h"
@@ -11,15 +10,15 @@ void UMenuPause::NativeConstruct()
 
 	UGameplayStatics::SetGamePaused(GetWorld(), true);
 
-	if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
+	if (APlayer_Controller* Pc = Cast<APlayer_Controller>(UGameplayStatics::GetPlayerController(this, 0)))
 	{
-		PC->bShowMouseCursor = true;
+		Pc->bShowMouseCursor = true;
 
 		FInputModeUIOnly InputMode;
 		InputMode.SetWidgetToFocus(this->TakeWidget());
 		InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
 
-		PC->SetInputMode(InputMode);
+		Pc->SetInputMode(InputMode);
 	}
 
 	BTN_Continuar->OnClicked.AddDynamic(this, &UMenuPause::OnClicked_BTN_Continuar);
@@ -38,7 +37,13 @@ void UMenuPause::OnClicked_BTN_Continuar()
 
 void UMenuPause::OnClicked_BTN_Opcoes()
 {
+	if (!LastWidget && LastWidget->GetIsEnabled()) LastWidget->SetIsEnabled(false);
+
+	WS_Menu->GetActiveWidget()->SetIsEnabled(false);
 	WS_Menu->SetActiveWidgetIndex(1);
+	WS_Menu->GetActiveWidget()->SetIsEnabled(true);
+
+	LastWidget = WS_Menu->GetActiveWidget();
 }
 
 void UMenuPause::OnClicked_BTN_Sair()
@@ -50,7 +55,7 @@ void UMenuPause::NativeDestruct()
 {
 	Super::NativeDestruct();
 
-	if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
+	if (APlayer_Controller* PC = Cast<APlayer_Controller>(UGameplayStatics::GetPlayerController(this, 0)))
 	{
 		PC->bShowMouseCursor = false;
 

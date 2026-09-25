@@ -71,8 +71,7 @@ class COELHOSASSASSINOS_API APorta : public AActor
 
 			bool bIsOpen;
 
-			TObjectPtr<class IInterface_SaveGame> SaveGameInterface;
-
+			UPROPERTY()
 			TObjectPtr<class UMain_Game_Instance> GameInstance;
 
 	#pragma endregion

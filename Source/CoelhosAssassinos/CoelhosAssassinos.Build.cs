@@ -7,6 +7,8 @@ public class CoelhosAssassinos : ModuleRules
 	public CoelhosAssassinos(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+
+		bAllowConfidentialPlatformDefines = true;
 	
 		PublicDependencyModuleNames.AddRange(new string[] 
 		{ 

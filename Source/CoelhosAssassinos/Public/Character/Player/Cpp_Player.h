@@ -29,22 +29,14 @@ class COELHOSASSASSINOS_API ACpp_Player : public APaperCharacter
 
 			void StopJump();
 
+			void OpenMenu();
+
 			UFUNCTION()
 			virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
-			void AddMappingContext(bool AddOrRemove);
-
 			void CreateDynamicMaterial();
 
-			void AddOrRemoveWidgetToViewport(bool bAdd);
-
-			virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-
 			void ReiniciarMapa();
-
-			void AddMenuPauseToViewport();
-
-			void PlaySound(USoundBase* Sound);
 
 	#pragma endregion
 
@@ -56,26 +48,14 @@ class COELHOSASSASSINOS_API ACpp_Player : public APaperCharacter
 			UPROPERTY(EditAnywhere, Category = "Animations")
 			TObjectPtr<class UPaperZDAnimationComponent> Comp_Animation;
 
-			UPROPERTY(EditAnywhere, Category = "Mapping Input")
-			TObjectPtr<class UInputMappingContext> MappingContext;
-
 			UPROPERTY(EditAnywhere, Category = "Input Action")
 			TObjectPtr<class UInputAction> MoveAction;
 
 			UPROPERTY(EditAnywhere, Category = "Input Action")
 			TObjectPtr<class UInputAction> JumpAction;
 
-			UPROPERTY(EditAnywhere, Category = "Stats")
-			int32 Vida;
-
-			UPROPERTY(EditAnywhere, Category = "Stats")
-			float Dano;
-
-			UPROPERTY(EditAnywhere, Category = "Widgets")
-			TSubclassOf<class UContadorDeVida> ContadorVidaClass;
-
-			UPROPERTY(EditAnywhere, Category = "Widgets")
-			TSubclassOf<class UMenuPause> MenuPauseClass;
+			UPROPERTY(EditAnywhere, Category = "Input Action")
+			TObjectPtr<class UInputAction> MenuAction;
 
 			UPROPERTY(EditAnywhere, Category = "Sound")
 			TObjectPtr<USoundBase> SB_Jump;
@@ -96,25 +76,18 @@ class COELHOSASSASSINOS_API ACpp_Player : public APaperCharacter
 			TObjectPtr<USoundBase> SB_Restart;
 
 			UPROPERTY()
+			int32 Vida;
+
+			UPROPERTY()
+			class APlayer_Controller* Pc;
+
+			UPROPERTY()
 			TObjectPtr<class UMaterialInstanceDynamic> Mat_Inst_Dynamic;
-
-			UPROPERTY()
-			TObjectPtr<class UGame_Save> GameData;
-
-			UPROPERTY()
-			TObjectPtr<class UContadorDeVida> ContadorVida;
-
-			UPROPERTY()
-			TObjectPtr<class UMenuPause> MenuPause;
 
 			bool bCanJump;
 
 			struct FTimerHandle TH_TomouDano;
 			struct FTimerHandle TH_ReiniciarMapa;
-
-			TObjectPtr<class IInterface_SaveGame> SaveGameInterface;
-
-			TObjectPtr<class UMain_Game_Instance> GameInstance;
 
 	#pragma endregion
 	

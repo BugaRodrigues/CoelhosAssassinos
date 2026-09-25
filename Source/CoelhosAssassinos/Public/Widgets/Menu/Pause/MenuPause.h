@@ -44,5 +44,8 @@ class COELHOSASSASSINOS_API UMenuPause : public UUserWidget
 			UPROPERTY(meta = (BindWidget))
 			TObjectPtr<class UWidgetSwitcher> WS_Menu;
 
+			UPROPERTY()
+			TObjectPtr<UWidget> LastWidget;
+
 	#pragma endregion
 };
