@@ -1,5 +1,6 @@
 #include "Widgets/Menu/Options/MenuOptions.h"
 #include "Widgets/Menu/Options/Controll/Controll_Settings.h"
+#include "Widgets/Menu/Options/Controll/TouchOptions.h"
 #include "Widgets/Menu/Options/Audio/Audio_Settings.h"
 #include "Components/WidgetSwitcher.h"
 #include "Kismet/GameplayStatics.h"
@@ -45,12 +46,13 @@ void UMenuOptions::OnClicked_BTN_Controls()
 {
 	if (IsValid(WidgetActive) && WidgetActive->GetIsEnabled()) WidgetActive->SetIsEnabled(false);
 
-	WS_MenuOptions->SetActiveWidgetIndex(2);
+	WS_MenuOptions->SetActiveWidgetIndex(3);
 
 	WidgetActive = WS_MenuOptions->GetActiveWidget();
 	WidgetActive->SetIsEnabled(true);
 
-	if (UControll_Settings* Control = Cast<UControll_Settings>(WS_MenuOptions->GetActiveWidget())) Control->Init();
+	//if (UControll_Settings* Control = Cast<UControll_Settings>(WS_MenuOptions->GetActiveWidget())) Control->Init();
+	if (UTouchOptions* Control = Cast<UTouchOptions>(WS_MenuOptions->GetActiveWidget())) Control->Init();
 }
 
 void UMenuOptions::OnClicked_BTN_Voltar()
@@ -70,8 +72,8 @@ void UMenuOptions::NativeDestruct()
 {
 	Super::NativeDestruct();
 
-	BTN_Video->OnClicked.RemoveDynamic(this, &UMenuOptions::OnClicked_BTN_Video);
-	BTN_Audio->OnClicked.RemoveDynamic(this, &UMenuOptions::OnClicked_BTN_Audio);
-	BTN_Controls->OnClicked.RemoveDynamic(this, &UMenuOptions::OnClicked_BTN_Controls);
-	BTN_Voltar->OnClicked.RemoveDynamic(this, &UMenuOptions::OnClicked_BTN_Voltar);
+	BTN_Video->OnClicked.RemoveAll(this);
+	BTN_Audio->OnClicked.RemoveAll(this);
+	BTN_Controls->OnClicked.RemoveAll(this);
+	BTN_Voltar->OnClicked.RemoveAll(this);
 }

@@ -1,5 +1,6 @@
 #include "Widgets/Menu/Pause/MenuPause.h"
 #include "Character/Controller/Player/Player_Controller.h"
+#include "Widgets/Menu/Options/MenuOptions.h"
 #include "Components/WidgetSwitcher.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/Button.h"
@@ -37,13 +38,16 @@ void UMenuPause::OnClicked_BTN_Continuar()
 
 void UMenuPause::OnClicked_BTN_Opcoes()
 {
-	if (!LastWidget && LastWidget->GetIsEnabled()) LastWidget->SetIsEnabled(false);
+	if (IsValid(LastWidget) && LastWidget->GetIsEnabled()) LastWidget->SetIsEnabled(false);
 
-	WS_Menu->GetActiveWidget()->SetIsEnabled(false);
+	LastWidget = WS_Menu->GetActiveWidget();
+
 	WS_Menu->SetActiveWidgetIndex(1);
 	WS_Menu->GetActiveWidget()->SetIsEnabled(true);
 
-	LastWidget = WS_Menu->GetActiveWidget();
+	if (UMenuOptions* Options = Cast<UMenuOptions>(WS_Menu->GetActiveWidget())) Options->Init();
+
+	LastWidget->SetIsEnabled(false);
 }
 
 void UMenuPause::OnClicked_BTN_Sair()
