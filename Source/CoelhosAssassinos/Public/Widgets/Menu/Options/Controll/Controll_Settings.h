@@ -43,8 +43,6 @@ class COELHOSASSASSINOS_API UControll_Settings : public UUserWidget
 
 			void SetCurrentBinds(FName ActionName, TObjectPtr<UInputKeySelector> KeySelector);
 
-			void AddMappingContext(bool bAddOrRemove);
-
 			virtual void NativeDestruct() override;
 
 	#pragma endregion

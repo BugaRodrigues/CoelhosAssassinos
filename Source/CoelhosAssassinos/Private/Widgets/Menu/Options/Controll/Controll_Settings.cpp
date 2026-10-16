@@ -1,4 +1,5 @@
 #include "Widgets/Menu/Options/Controll/Controll_Settings.h"
+#include "Character/Controller/Player/Player_Controller.h"
 #include "System/RemappingSystem/InputRemappingSystem.h"
 #include "Components/InputKeySelector.h"
 #include "EnhancedInputSubsystems.h"
@@ -15,7 +16,10 @@ void UControll_Settings::Init()
 
 	SetIsEnabled(true);
 
-	AddMappingContext(true);
+	if (APlayer_Controller* Pc = Cast<APlayer_Controller>(UGameplayStatics::GetPlayerController(this, 0)))
+	{
+		Pc->AddOrRemoveImc(true);
+	}
 
 	SetCurrentBinds(MoveLeft, KS_MoveLeft);
 	SetCurrentBinds(MoveLeft_Secundary, KS_MoveLeft_Secondary);
@@ -67,27 +71,14 @@ void UControll_Settings::SetCurrentBinds(FName ActionName, TObjectPtr<UInputKeyS
 	KeySelector->SetSelectedKey(RSS->GetCurrentKey(ActionName)); 
 }
 
-void UControll_Settings::AddMappingContext(bool bAddOrRemove)
-{
-	if (!IMC) return;
-
-	APlayerController* PC = Cast<APlayerController>(UGameplayStatics::GetPlayerController(this, 0));
-	if (!PC) return;
-
-	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer());
-	if (!Subsystem || Subsystem->HasMappingContext(IMC)) return;
-
-	FModifyContextOptions Options;
-	Options.bNotifyUserSettings = true;
-
-	bAddOrRemove ? Subsystem->AddMappingContext(IMC, 0, Options) : Subsystem->RemoveMappingContext(IMC);
-}
-
 void UControll_Settings::NativeDestruct()
 {
 	Super::NativeDestruct();
 
-	AddMappingContext(false);
+	if (APlayer_Controller* Pc = Cast<APlayer_Controller>(UGameplayStatics::GetPlayerController(this, 0)))
+	{
+		Pc->AddOrRemoveImc(false);
+	}
 
 	KS_MoveLeft->OnKeySelected.RemoveAll(this);
 	KS_MoveRight->OnKeySelected.RemoveAll(this);

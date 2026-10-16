@@ -20,9 +20,17 @@ class COELHOSASSASSINOS_API UTouchBinds : public UUserWidget
 			UFUNCTION()
 			void OnBTN_VoltarClicked();
 
-			void SetNewPositionHUDInterface(int32 Index, FVector2D NewScreenPosition);
+			void UpdateTouchControlPosition(int32 Index, FVector2D NewScreenPosition);
 
 			virtual bool NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
+
+			void SetButtonInterfacePosition(UWidget* Widget, FVector2D NewPosition = FVector2D::ZeroVector);
+
+			FVector2D ConertViewportToFloat(FVector2D Position);
+
+			FVector2D GetHUDPosition(int32 Index);
+
+			int32 GetIndexFromWidget(UWidget* Widget);
 
 			virtual void NativeDestruct() override;
 
@@ -33,6 +41,15 @@ class COELHOSASSASSINOS_API UTouchBinds : public UUserWidget
 			FOnWidgetDestruct OnWidgetDestruct;
 
 		protected:
+			UPROPERTY(meta = (BindWidget))
+			TObjectPtr<UWidget> LeftButton;
+
+			UPROPERTY(meta = (BindWidget))
+			TObjectPtr<UWidget> RightButton;
+
+			UPROPERTY(meta = (BindWidget))
+			TObjectPtr<UWidget> UpButton;
+
 			UPROPERTY(meta = (BindWidget))
 			TObjectPtr<class UButton> BTN_Voltar;
 

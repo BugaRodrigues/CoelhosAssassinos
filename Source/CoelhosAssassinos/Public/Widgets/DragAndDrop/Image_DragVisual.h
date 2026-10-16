@@ -18,6 +18,8 @@ class COELHOSASSASSINOS_API UImage_DragVisual : public UUserWidget
 
 			virtual void NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation) override;
 
+			virtual FReply NativeOnTouchStarted(const FGeometry& InGeometry, const FPointerEvent& InTouchEvent) override;
+
 	#pragma endregion
 
 	#pragma region Properties	
@@ -31,6 +33,11 @@ class COELHOSASSASSINOS_API UImage_DragVisual : public UUserWidget
 		protected:
 			UPROPERTY(meta = (BindWidget))
 			TObjectPtr<class UImage> Img_Icon;
+
+			bool bIsResizing;
+
+			FVector2D InitialTouchPos;
+			FVector2D InitialWidgetSize;
 
 	#pragma endregion
 };

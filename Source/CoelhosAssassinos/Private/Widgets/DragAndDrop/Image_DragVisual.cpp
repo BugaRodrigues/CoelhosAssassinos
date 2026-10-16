@@ -15,7 +15,6 @@ void UImage_DragVisual::NativePreConstruct()
 	Img_Icon->SetBrushSize(IconBrushSize);
 }
 
-
 FReply UImage_DragVisual::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
 	Super::NativeOnMouseButtonDown(InGeometry, InMouseEvent);
@@ -38,4 +37,11 @@ void UImage_DragVisual::NativeOnDragDetected(const FGeometry& InGeometry, const 
 
 	SetVisibility(ESlateVisibility::HitTestInvisible);
 	SetRenderOpacity(0.5f);
+}
+
+FReply UImage_DragVisual::NativeOnTouchStarted(const FGeometry& InGeometry, const FPointerEvent& InTouchEvent)
+{
+	Super::NativeOnTouchStarted(InGeometry, InTouchEvent);
+
+	return UWidgetBlueprintLibrary::DetectDragIfPressed(InTouchEvent, this, EKeys::TouchKeys[0]).NativeReply;
 }
