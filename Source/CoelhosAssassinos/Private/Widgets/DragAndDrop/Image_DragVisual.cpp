@@ -12,7 +12,7 @@ void UImage_DragVisual::NativePreConstruct()
 	if (!Img_Icon || !IconBrush) return;
 	
 	Img_Icon->SetBrushFromTexture(IconBrush);
-	Img_Icon->SetBrushSize(IconBrushSize);
+	Img_Icon->SetDesiredSizeOverride(IconBrushSize);
 }
 
 FReply UImage_DragVisual::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)

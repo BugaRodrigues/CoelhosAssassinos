@@ -1,5 +1,5 @@
 #include "Character/Controller/Player/Player_Controller.h"
-#include "GameInstance/Main_Game_Instance.h"
+#include "Interface/SaveGame/Interface_SaveGame.h"
 #include "Widgets/Contador/ContadorDeVida.h"
 #include "Widgets/Menu/Pause/MenuPause.h"
 #include "EnhancedInputSubsystems.h"
@@ -9,9 +9,13 @@ void APlayer_Controller::BeginPlay()
 {
 	Super::BeginPlay();
 
-	GetSaveGame();
-	AddOrRemoveImc(true);
-	AddOrRemoveMenuVida(true);
+	UGameInstance* GameInstance = UGameplayStatics::GetGameInstance(this);
+	if (!GameInstance) return;
+
+	Interface_SaveGame = Cast<IInterface_SaveGame>(GameInstance);
+	if (!Interface_SaveGame) return;
+
+	GameData = Interface_SaveGame->GetGameData();
 }
 
 void APlayer_Controller::AddOrRemoveMenuVida(bool bAddOrRemove)
@@ -38,7 +42,7 @@ void APlayer_Controller::UpdateVida(int32 NewVida)
 	ContadorVida->SetVida(NewVida);
 }
 
-void APlayer_Controller::AddOrRemoveMenuPause()
+void APlayer_Controller::AddMenuPause()
 {
 	if (!MenuPauseClass) return;
 
@@ -58,8 +62,10 @@ void APlayer_Controller::AddOrRemoveImc(bool bAddorRemove)
 	FModifyContextOptions Options;
 	Options.bNotifyUserSettings = true;
 
-	ActivateTouchInterface(bAddorRemove ? TouchInterface : nullptr);
 	(bAddorRemove) ? Subsystem->AddMappingContext(MappingContext, 0, Options) : Subsystem->RemoveMappingContext(MappingContext);
+	#if PLATFORM_ANDROID || PLATFORM_IOS || WITH_EDITOR
+		ActivateTouchInterface(bAddorRemove ? TouchInterface : nullptr);
+	#endif
 }
 
 void APlayer_Controller::ReiniciarMapa()
@@ -70,12 +76,12 @@ void APlayer_Controller::ReiniciarMapa()
 
 		GameData = NewObject<UGame_Save>();
 
-		if (GameInstance)
+		if (Interface_SaveGame)
 		{
-			GameInstance->SaveGame(true, GameData);
+			Interface_SaveGame->SaveGame(true, GameData);
 
 			TWeakObjectPtr<APlayer_Controller> WeakThis(this);
-			GameInstance->OnSaveGameComplete.BindLambda([WeakThis]
+			Interface_SaveGame->OnSaveGameComplete.BindLambda([WeakThis]
 			{
 				if (!WeakThis.IsValid()) return;
 
@@ -85,9 +91,16 @@ void APlayer_Controller::ReiniciarMapa()
 	}
 	else
 	{
-		GameInstance->SaveGame(true, GameData);
+		Interface_SaveGame->SaveGame(true, GameData);
+
+		TWeakObjectPtr<UWorld> WeakWorld(GetWorld());
+		Interface_SaveGame->OnSaveGameComplete.BindLambda( [WeakWorld]
+		{
+			if (!WeakWorld.IsValid()) return;
+
+			UGameplayStatics::OpenLevel(WeakWorld.Get(), WeakWorld->GetFName());
+		});
 	}
-	AddOrRemoveMenuPause();
 }
 
 void APlayer_Controller::PlaySound(USoundBase* Sound)
@@ -99,9 +112,9 @@ void APlayer_Controller::PlaySound(USoundBase* Sound)
 
 void APlayer_Controller::SaveGame(bool bIsAsync)
 {
-	if (!GameInstance) return;
+	if (!Interface_SaveGame) return;
 
-	GameInstance->SaveGame(bIsAsync, GameData);
+	Interface_SaveGame->SaveGame(bIsAsync, GameData);
 }
 
 int32 APlayer_Controller::GetVida()
@@ -111,14 +124,11 @@ int32 APlayer_Controller::GetVida()
 	return GameData->Vida;
 }
 
-bool APlayer_Controller::GetSaveGame()
+void APlayer_Controller::SetVida(int32 NewVida)
 {
-	GameInstance = Cast<UMain_Game_Instance>(GetGameInstance());
-	if (!GameInstance) return false;
+	if (!GameData) return;
 
-	GameData = GameInstance->GetGameData();
-
-	return true;
+	GameData->Vida = NewVida;
 }
 
 void APlayer_Controller::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -127,6 +137,6 @@ void APlayer_Controller::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 	if (EndPlayReason == EEndPlayReason::EndPlayInEditor || EndPlayReason == EEndPlayReason::Quit)
 	{
-		if (GameInstance) GameInstance->OnSaveGameComplete.Unbind();
+		if (Interface_SaveGame) Interface_SaveGame->OnSaveGameComplete.Unbind();
 	}
 }

@@ -8,12 +8,6 @@
 
 #include "Main_Game_Instance.generated.h"
 
-DECLARE_DELEGATE(FOnLoadGameComplete)
-DECLARE_DELEGATE(FOnSaveGameComplete)
-
-DECLARE_DELEGATE(FOnLoadSettingsComplete)
-DECLARE_DELEGATE(FOnSaveSettingsComplete)
-
 UCLASS()
 class COELHOSASSASSINOS_API UMain_Game_Instance : public UGameInstance, public IInterface_SaveGame, public IInterface_SaveSettings
 {
@@ -52,11 +46,7 @@ class COELHOSASSASSINOS_API UMain_Game_Instance : public UGameInstance, public I
 	#pragma region Variables
 
 		public:
-			FOnLoadGameComplete OnLoadGameComplete;
-			FOnSaveGameComplete OnSaveGameComplete;
-
-			FOnLoadSettingsComplete OnLoadSettingsComplete;
-			FOnSaveSettingsComplete OnSaveSettingsComplete;
+			
 
 		private:
 			const FString SaveGameSlot = TEXT("MainGameSave");
@@ -65,8 +55,14 @@ class COELHOSASSASSINOS_API UMain_Game_Instance : public UGameInstance, public I
 			UPROPERTY()
 			TObjectPtr<UGame_Save> GameData;
 
+			UPROPERTY(EditAnywhere, Category = "Save")
+			TSubclassOf<UGame_Save> Class_GameSave;
+
 			UPROPERTY()
 			TObjectPtr<USettings_Save> SettingsData;
+
+			UPROPERTY(EditAnywhere, Category = "Save")
+			TSubclassOf<USettings_Save> Class_SettingsSave;
 
 			UPROPERTY(EditDefaultsOnly, Category = "Widget")
 			TSubclassOf<class USaving_E_Loading> SavingAndLoadin_WidgetClass;

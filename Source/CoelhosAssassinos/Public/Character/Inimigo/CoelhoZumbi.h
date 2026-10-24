@@ -14,12 +14,14 @@ class COELHOSASSASSINOS_API ACoelhoZumbi : public APaperCharacter
 		public:
 			ACoelhoZumbi();
 
-			virtual void Tick(float DeltaTime) override;
+			//virtual void Tick(float DeltaTime) override;
 
 			//virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 		protected:
 			virtual void BeginPlay() override;
+
+			void Move();
 
 			UFUNCTION()
 			void OnEndCollisionChao(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);

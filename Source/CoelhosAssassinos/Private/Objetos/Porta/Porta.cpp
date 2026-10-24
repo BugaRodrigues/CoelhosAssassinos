@@ -1,5 +1,5 @@
 #include "Objetos/Porta/Porta.h"
-#include "GameInstance/Main_Game_Instance.h"
+#include "Interface/SaveGame/Interface_SaveGame.h"
 #include "GameFramework/GameModeBase.h"
 #include "Components/AudioComponent.h"
 #include "Components/BoxComponent.h"
@@ -35,10 +35,13 @@ void APorta::BeginPlay()
 
 	PlaySound(SB_BaseFechado);
 
-	GameInstance = Cast<UMain_Game_Instance>(GetGameInstance());
+	UGameInstance* GameInstance = UGameplayStatics::GetGameInstance(this);
 	if (!GameInstance) return;
 
-	GameData = GameInstance->GetGameData();
+	Interface_SaveGame = Cast<IInterface_SaveGame>(GameInstance);
+	if (!Interface_SaveGame) return;
+
+	GameData = Interface_SaveGame->GetGameData();
 
 	GameMode = Cast<AMainGameMode>(GetWorld()->GetAuthGameMode());
 	if (!GameMode) return;
@@ -46,31 +49,39 @@ void APorta::BeginPlay()
 	GameMode->OpenGate.BindUObject(this, &APorta::OpenDoor);
 
 	if (Sprite_Closed) Comp_Sprite->SetSprite(Sprite_Closed);
+
+	if (!GameData->Mapas_Completos.Contains(GetWorld()->GetFName()))
+	{
+		GameData->Mapa_Atual = GetWorld()->GetFName();
+
+		Interface_SaveGame->SaveGame(true, GameData);
+	}
 }
 
 void APorta::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	PlaySound(SB_Entrar);
 
-	if (!GameInstance) UE_LOG(LogTemp, Error, TEXT("SaveGameInterface is null"));
-
 	if (!bIsOpen) return;
 
-	if (!OtherActor && OtherActor == this) return;
+	else if (!OtherActor && OtherActor == this) return;
 
-	if (!OtherActor->ActorHasTag(FName("Player"))) return;
+	else if (!OtherActor->ActorHasTag(FName("Player"))) return;
 
-	GameData->MapaName = FName(*NextLevel.GetAssetName());
-
-	if (!GameInstance)
+	else if (!Interface_SaveGame)
 	{
-		GameInstance->SaveGame(true, GameData);
-
-		GameInstance->OnSaveGameComplete.BindLambda([this]()
-		{
-			UGameplayStatics::OpenLevel(this, FName(*NextLevel.GetAssetName()));
-		});
+		UE_LOG(LogTemp, Error, TEXT("SaveGameInterface is null")); 
+		return;
 	}
+
+	if (!GameData->Mapas_Completos.Contains(GetWorld()->GetFName()))
+	{
+		GameData->Mapas_Completos.Add(GetWorld()->GetFName());
+
+		Interface_SaveGame->SaveGame(false, GameData);
+	}
+
+	UGameplayStatics::OpenLevel(this, NextLevel);
 }
 
 void APorta::OpenDoor()
@@ -102,6 +113,11 @@ void APorta::EndPlay(const EEndPlayReason::Type EndPlayReason)
 		if (GameMode)
 		{
 			GameMode->OpenGate.Unbind();
+		}
+
+		if (Interface_SaveGame)
+		{
+			Interface_SaveGame->OnSaveGameComplete.Unbind();
 		}
 	}
 }

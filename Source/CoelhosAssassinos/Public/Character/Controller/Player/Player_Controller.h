@@ -15,7 +15,7 @@ class COELHOSASSASSINOS_API APlayer_Controller : public APlayerController
 
 			void UpdateVida(int32 NewVida);
 
-			void AddOrRemoveMenuPause();
+			void AddMenuPause();
 
 			void AddOrRemoveImc(bool bAddorRemove);
 
@@ -27,10 +27,10 @@ class COELHOSASSASSINOS_API APlayer_Controller : public APlayerController
 
 			int32 GetVida();
 
+			void SetVida(int32 NewVida);
+
 		protected:
 			virtual void BeginPlay() override;
-
-			bool GetSaveGame();
 
 			virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
@@ -61,8 +61,7 @@ class COELHOSASSASSINOS_API APlayer_Controller : public APlayerController
 			UPROPERTY()
 			TObjectPtr<class UMenuPause> MenuPause;
 
-			UPROPERTY()
-			TObjectPtr<class UMain_Game_Instance> GameInstance;
+			class IInterface_SaveGame* Interface_SaveGame;
 
 	#pragma endregion
 	

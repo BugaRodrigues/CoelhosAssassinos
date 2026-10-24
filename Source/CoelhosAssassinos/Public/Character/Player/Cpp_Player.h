@@ -29,7 +29,7 @@ class COELHOSASSASSINOS_API ACpp_Player : public APaperCharacter
 
 			void StopJump();
 
-			void OpenMenu();
+			void PauseMenu();
 
 			UFUNCTION()
 			virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;

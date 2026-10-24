@@ -45,11 +45,13 @@ class COELHOSASSASSINOS_API UMenuPrincipal_Jogar : public UUserWidget
 			UPROPERTY(meta = (BindWidget))
 			TObjectPtr<class UButton> BTN_Voltar;
 
+			UPROPERTY(EditAnywhere)
+			FName Mapa;
+
 			UPROPERTY()
 			TObjectPtr<class UGame_Save> GameData;
 
-			UPROPERTY()
-			TObjectPtr<class UMain_Game_Instance> GameInstance;
+			class IInterface_SaveGame* Interface_SaveGame;
 
 	#pragma endregion
 };

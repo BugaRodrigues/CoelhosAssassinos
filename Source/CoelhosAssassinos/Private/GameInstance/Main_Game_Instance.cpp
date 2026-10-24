@@ -6,12 +6,14 @@ void UMain_Game_Instance::Init()
 {
 	Super::Init();
 
+	if (!Class_GameSave || !Class_GameSave) return;
+
 	LoadSave(false);
 
 	LoadSettings(false);
 }
 
-#pragma region Save Game
+#pragma region ------- Save Game -------
 
 	void UMain_Game_Instance::LoadSave(bool bAsync)
 	{
@@ -32,7 +34,7 @@ void UMain_Game_Instance::Init()
 		}
 		else 
 		{
-			GameData = Cast<UGame_Save>(UGameplayStatics::CreateSaveGameObject(UGame_Save::StaticClass()));
+			GameData = Cast<UGame_Save>(UGameplayStatics::CreateSaveGameObject(Class_GameSave));
 		}
 	}
 
@@ -48,7 +50,7 @@ void UMain_Game_Instance::Init()
 		}
 		else
 		{
-			UE_LOG(LogTemp, Error, TEXT("Falha ao carregar o jogo!!!"));
+			GameData = Cast<UGame_Save>(UGameplayStatics::CreateSaveGameObject(Class_GameSave));
 		}
 	}
 
@@ -96,7 +98,7 @@ void UMain_Game_Instance::Init()
 
 #pragma endregion
 
-#pragma region Save Settings
+#pragma region ----- Save Settings ----- 
 
 	void UMain_Game_Instance::LoadSettings(bool bAsync)
 	{
@@ -117,7 +119,7 @@ void UMain_Game_Instance::Init()
 		}
 		else
 		{
-			SettingsData = Cast<USettings_Save>(UGameplayStatics::CreateSaveGameObject(USettings_Save::StaticClass()));
+			SettingsData = Cast<USettings_Save>(UGameplayStatics::CreateSaveGameObject(Class_SettingsSave));
 		}
 	}
 
@@ -133,7 +135,7 @@ void UMain_Game_Instance::Init()
 		}
 		else
 		{
-			UE_LOG(LogTemp, Error, TEXT("Falha ao carregar o settings!!!"));
+			SettingsData = Cast<USettings_Save>(UGameplayStatics::CreateSaveGameObject(Class_SettingsSave));
 		}
 	}
 

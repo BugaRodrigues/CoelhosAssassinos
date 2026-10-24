@@ -44,6 +44,7 @@ void UMenuOptions::OnClicked_BTN_Audio()
 
 void UMenuOptions::OnClicked_BTN_Controls()
 {
+#if PLATFORM_ANDROID || PLATFORM_IOS || WITH_EDITOR
 	if (IsValid(WidgetActive) && WidgetActive->GetIsEnabled()) WidgetActive->SetIsEnabled(false);
 
 	WS_MenuOptions->SetActiveWidgetIndex(3);
@@ -51,8 +52,17 @@ void UMenuOptions::OnClicked_BTN_Controls()
 	WidgetActive = WS_MenuOptions->GetActiveWidget();
 	WidgetActive->SetIsEnabled(true);
 
-	//if (UControll_Settings* Control = Cast<UControll_Settings>(WS_MenuOptions->GetActiveWidget())) Control->Init();
 	if (UTouchOptions* Control = Cast<UTouchOptions>(WS_MenuOptions->GetActiveWidget())) Control->Init();
+#elif PLATFORM_DESKTOP
+	if (IsValid(WidgetActive) && WidgetActive->GetIsEnabled()) WidgetActive->SetIsEnabled(false);
+
+	WS_MenuOptions->SetActiveWidgetIndex(2);
+
+	WidgetActive = WS_MenuOptions->GetActiveWidget();
+	WidgetActive->SetIsEnabled(true);
+
+	if (UControll_Settings* Control = Cast<UControll_Settings>(WS_MenuOptions->GetActiveWidget())) Control->Init();
+#endif
 }
 
 void UMenuOptions::OnClicked_BTN_Voltar()
@@ -67,6 +77,7 @@ void UMenuOptions::OnClicked_BTN_Voltar()
 
 	WidgetActive = nullptr;
 }
+
 
 void UMenuOptions::NativeDestruct()
 {

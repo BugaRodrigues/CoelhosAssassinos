@@ -40,7 +40,7 @@ class COELHOSASSASSINOS_API APorta : public AActor
 			TObjectPtr<class UBoxComponent> Comp_BoxCollision;
 
 			UPROPERTY(EditAnywhere, Category = "Mapa")
-			TSoftObjectPtr<UWorld> NextLevel;
+			FName NextLevel;
 
 			UPROPERTY(EditAnywhere, Category = "Sprites")
 			TObjectPtr<class UPaperSprite> Sprite_Open;
@@ -71,8 +71,7 @@ class COELHOSASSASSINOS_API APorta : public AActor
 
 			bool bIsOpen;
 
-			UPROPERTY()
-			TObjectPtr<class UMain_Game_Instance> GameInstance;
+			class IInterface_SaveGame* Interface_SaveGame;
 
 	#pragma endregion
 	

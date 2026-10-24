@@ -1,5 +1,5 @@
 #include "Widgets/Menu/MenuPrincipal/MenuPrincipal_Jogar.h"
-#include "GameInstance/Main_Game_Instance.h"
+#include "Interface/SaveGame/Interface_SaveGame.h"
 #include "Components/WidgetSwitcher.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/Button.h"
@@ -8,12 +8,20 @@ void UMenuPrincipal_Jogar::Init()
 {
 	SetIsEnabled(true);
 
-	GameInstance = Cast<UMain_Game_Instance>(GetGameInstance());
+	UGameInstance* GameInstance = UGameplayStatics::GetGameInstance(this);
 	if (!GameInstance) return;
 
-	GameInstance->OnSaveGameComplete.BindUObject(this, &UMenuPrincipal_Jogar::OnSaveGameComplete);
+	Interface_SaveGame = Cast<IInterface_SaveGame>(GameInstance);
+	if (!Interface_SaveGame) return;
 
-	GameData = GameInstance->GetGameData();
+	Interface_SaveGame->OnSaveGameComplete.BindUObject(this, &UMenuPrincipal_Jogar::OnSaveGameComplete);
+
+	GameData = Interface_SaveGame->GetGameData();
+
+	if (GameData->Mapa_Atual.IsNone())
+	{
+		BTN_Continuar->SetVisibility(ESlateVisibility::Collapsed);
+	}
 
 	BTN_NewGame->OnClicked.AddDynamic(this, &UMenuPrincipal_Jogar::OnClicked_BTN_NewGame);
 	BTN_Continuar->OnClicked.AddDynamic(this, &UMenuPrincipal_Jogar::OnClicked_BTN_Continuar);
@@ -23,14 +31,11 @@ void UMenuPrincipal_Jogar::Init()
 
 void UMenuPrincipal_Jogar::OnClicked_BTN_NewGame()
 {
-	if (IsValid(GameInstance))
+	if (Interface_SaveGame)
 	{
 		GameData = NewObject<UGame_Save>();
 
-		GameInstance->SaveGame(true, GameData);
-		GameInstance->SaveGame(false, GameData);
-
-		OnSaveGameComplete();
+		Interface_SaveGame->SaveGame(true, GameData);
 	}
 	else
 	{
@@ -40,9 +45,9 @@ void UMenuPrincipal_Jogar::OnClicked_BTN_NewGame()
 
 void UMenuPrincipal_Jogar::OnClicked_BTN_Continuar()
 {
-	if (GameInstance && GameData)
+	if (Interface_SaveGame)
 	{
-		UGameplayStatics::OpenLevel(this, GameData->MapaName);
+		UGameplayStatics::OpenLevel(this, Mapa);
 	}
 	else
 	{
@@ -65,9 +70,9 @@ void UMenuPrincipal_Jogar::OnClicked_BTN_Voltar()
 
 void UMenuPrincipal_Jogar::OnSaveGameComplete()
 {
-	if (!GameData) return;
+	if (Mapa.IsNone()) return;
 
-	UGameplayStatics::OpenLevel(this, GameData->MapaName);
+	UGameplayStatics::OpenLevel(this, Mapa);
 }
 
 void UMenuPrincipal_Jogar::NativeDestruct()
@@ -78,5 +83,5 @@ void UMenuPrincipal_Jogar::NativeDestruct()
 	BTN_Continuar->OnClicked.RemoveDynamic(this, &UMenuPrincipal_Jogar::OnClicked_BTN_Continuar);
 	BTN_Voltar->OnClicked.RemoveDynamic(this, &UMenuPrincipal_Jogar::OnClicked_BTN_Voltar);
 
-	if (IsValid(GameInstance)) GameInstance->OnSaveGameComplete.Unbind();
+	if (Interface_SaveGame) Interface_SaveGame->OnSaveGameComplete.Unbind();
 }

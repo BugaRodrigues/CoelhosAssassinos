@@ -4,15 +4,24 @@
 #include "GameFramework/SaveGame.h"
 #include "Game_Save.generated.h"
 
-UCLASS()
+UCLASS(Blueprintable)
 class COELHOSASSASSINOS_API UGame_Save : public USaveGame
 {
 	GENERATED_BODY()
 
 	public:
-		UPROPERTY(EditAnywhere, Category = "Save")
-		FName MapaName = FName("Map_Tutorial");
+		UGame_Save();
 
-		UPROPERTY(EditAnywhere, Category = "Save")
-		int32 Vida = 3;
+	public:
+		UPROPERTY(EditAnywhere, SaveGame, Category = "Mapa")
+		FName Mapa_Inicial;
+
+		UPROPERTY(EditAnywhere, SaveGame, Category = "Mapa")
+		FName Mapa_Atual;
+
+		UPROPERTY(EditAnywhere, SaveGame, Category = "Mapa")
+		TArray<FName> Mapas_Completos;
+
+		UPROPERTY(EditAnywhere, SaveGame, Category = "Save")
+		int32 Vida;
 };

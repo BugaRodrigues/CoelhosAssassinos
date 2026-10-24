@@ -10,7 +10,7 @@
 
 ACoelhoZumbi::ACoelhoZumbi()
 {
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
 	Vida = 20.f;
 	Velocidade = 300.f;
@@ -56,16 +56,15 @@ void ACoelhoZumbi::BeginPlay()
 		}
 
 	#pragma endregion
+
+	GetWorldTimerManager().SetTimer(TH_Move, this, &ACoelhoZumbi::Move, 1.f, true);
 }
 
-void ACoelhoZumbi::Tick(float DeltaTime)
+void ACoelhoZumbi::Move()
 {
-	Super::Tick(DeltaTime);
+	if (!bCanMove) return;
 
-	if (bCanMove)
-	{
-		AddMovementInput(FVector(0.f, Velocidade * DeltaTime, 0.f), Direction);
-	}
+	AddMovementInput(FVector(0.f, Velocidade * Direction, 0.f));
 }
 
 void ACoelhoZumbi::OnEndCollisionChao(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
@@ -128,8 +127,6 @@ float ACoelhoZumbi::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 
 	if (Vida <= 0.f)
 	{
-		bCanMove = false;
-
 		FVector Scale = GetSprite()->GetRelativeScale3D();
 
 		GetSprite()->SetRelativeScale3D(FVector(Scale.X, .1f, Scale.Z));
@@ -138,7 +135,7 @@ float ACoelhoZumbi::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 		Comp_Box_Parede->DestroyComponent();
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-		GetWorld()->GetTimerManager().SetTimer(TH_Morte, this, &ACoelhoZumbi::Morreu, 1.f);
+		GetWorldTimerManager().SetTimer(TH_Morte, this, &ACoelhoZumbi::Morreu, 1.f);
 		
 		GetWorldTimerManager().SetTimerForNextTick([this]()
 		{

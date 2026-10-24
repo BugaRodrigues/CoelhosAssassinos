@@ -5,11 +5,14 @@
 
 void UTouchOptions::Init()
 {
+#if PLATFORM_ANDROID || PLATFORM_IOS || WITH_EDITOR
 	BTN_RemapBinds->OnClicked.AddDynamic(this, &UTouchOptions::OnBTN_RemapBindsClicked);
+#endif
 }
 
 void UTouchOptions::OnBTN_RemapBindsClicked()
 {
+#if PLATFORM_ANDROID || PLATFORM_IOS || WITH_EDITOR
 	if (!TouchBindsClass) return;
 
 	TouchBinds = CreateWidget<UTouchBinds>(this, TouchBindsClass);
@@ -21,10 +24,12 @@ void UTouchOptions::OnBTN_RemapBindsClicked()
 	UWidgetBlueprintLibrary::GetAllWidgetsOfClass(GetWorld(), FoundWidgets, UUserWidget::StaticClass(), true);
 
 	if (FoundWidgets.IsValidIndex(0)) FoundWidgets[0]->SetVisibility(ESlateVisibility::Collapsed);
+#endif
 }
 
 void UTouchOptions::OnTouchBindsDestruct()
 {
+#if PLATFORM_ANDROID || PLATFORM_IOS || WITH_EDITOR
 	if (!TouchBinds) return;
 
 	TouchBinds->OnWidgetDestruct.Unbind();
@@ -34,11 +39,13 @@ void UTouchOptions::OnTouchBindsDestruct()
 	UWidgetBlueprintLibrary::GetAllWidgetsOfClass(GetWorld(), FoundWidgets, UUserWidget::StaticClass(), true);
 
 	if (FoundWidgets.IsValidIndex(0)) FoundWidgets[0]->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+#endif
 }
 
 void UTouchOptions::NativeDestruct()
 {
 	Super::NativeDestruct();
-
+#if PLATFORM_ANDROID || PLATFORM_IOS || WITH_EDITOR
 	BTN_RemapBinds->OnClicked.RemoveAll(this);
+#endif
 }

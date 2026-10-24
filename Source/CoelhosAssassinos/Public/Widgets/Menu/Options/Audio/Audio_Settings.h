@@ -92,9 +92,7 @@ class COELHOSASSASSINOS_API UAudio_Settings : public UUserWidget
 			UPROPERTY()
 			TObjectPtr<class USettings_Save> SettingsData;
 
-			TObjectPtr<class UMain_Game_Instance> GameInstance;
-
-			TObjectPtr<class IInterface_SaveSettings> Interface_SaveSettings;
+			class IInterface_SaveSettings* Interface_SaveSettings;
 
 	#pragma endregion
 };

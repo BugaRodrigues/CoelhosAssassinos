@@ -17,7 +17,8 @@ ACpp_Player::ACpp_Player()
 	bCanJump = true;
 
 	SetRootComponent(GetCapsuleComponent());
-	
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+
 	Comp_Animation = CreateDefaultSubobject<UPaperZDAnimationComponent>(TEXT("Animation Component"));
 
 	Tags.Add(FName("Player"));
@@ -27,12 +28,13 @@ void ACpp_Player::BeginPlay()
 {
 	Super::BeginPlay();
 
-	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-
 	Pc = Cast<APlayer_Controller>(GetController());
 	if (!Pc) return;
 
 	Vida = Pc->GetVida();
+
+	Pc->AddOrRemoveMenuVida(true);
+	Pc->AddOrRemoveImc(true);
 
 	CreateDynamicMaterial();
 }
@@ -63,7 +65,7 @@ void ACpp_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 	if (MenuAction)
 	{
-		EnhancedInput->BindAction(MenuAction, ETriggerEvent::Started, this, &ACpp_Player::OpenMenu);
+		EnhancedInput->BindAction(MenuAction, ETriggerEvent::Started, this, &ACpp_Player::PauseMenu);
 	}
 }
 
@@ -81,20 +83,20 @@ float ACpp_Player::TakeDamage(float DamageAmount, FDamageEvent const& DamageEven
 
 	FName MapaName = FName(GetWorld()->GetName());
 	float TempoDeQueda = ((-2.f * (750.f * 2)) / GetCharacterMovement()->GetGravityZ()) + 0.2f;
-	
+
 	TWeakObjectPtr<ACpp_Player> WeakThis(this);
 	GetWorldTimerManager().SetTimer(TH_ReiniciarMapa, FTimerDelegate::CreateLambda([WeakThis] () 
 	{
 		if (!WeakThis.IsValid() ) return;
 
-		if (!WeakThis->Pc && !WeakThis->SB_LoseAll) return;
+		if (!WeakThis->Pc || !WeakThis->SB_LoseAll) return;
 
 		WeakThis->Pc->PlaySound(WeakThis->SB_LoseAll);
 		WeakThis->Pc->ReiniciarMapa();
 	}), TempoDeQueda, false);
 
-	Pc->SaveGame(true);
 	Pc->UpdateVida(Vida);
+	Pc->SetVida(Vida);
 
 	if (IsValid(Mat_Inst_Dynamic))
 	{
@@ -163,11 +165,11 @@ void ACpp_Player::StopJump()
 	StopJumping();
 }
 
-void ACpp_Player::OpenMenu()
+void ACpp_Player::PauseMenu()
 {
 	if (!Pc) return;
 
-	Pc->AddOrRemoveMenuPause();
+	Pc->AddMenuPause();
 }
 
 void ACpp_Player::CreateDynamicMaterial()
